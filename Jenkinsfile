@@ -120,6 +120,13 @@ pipeline {
                 dir(env.WORKSPACE) {
                     sh 'docker compose -f infra-dev/docker-compose.yml down --remove-orphans || true'
                     sh 'docker compose -f infra-dev/docker-compose.yml up -d --build'
+                    sh '''
+                        docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh \\
+                          --bootstrap-server localhost:9092 \\
+                          --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1
+                        docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh \\
+                          --bootstrap-server localhost:9092 --describe --topic catalog-product-events
+                    '''
                 }
             }
         }
