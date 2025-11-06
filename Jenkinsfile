@@ -26,6 +26,7 @@ pipeline {
         CATALOG_REPO   = 'https://github.com/rrajo-portfolio/catalog-service.git'
         USERS_REPO     = 'https://github.com/rrajo-portfolio/users-service.git'
         ORDERS_REPO    = 'https://github.com/rrajo-portfolio/orders-service.git'
+        GATEWAY_REPO   = 'https://github.com/rrajo-portfolio/gateway-service.git'
         MVN_TEST_CMD   = './mvnw -B test'
         SONAR_CMD      = './mvnw -B sonar:sonar'
         IMAGE_NAMESPACE = 'rrajo-portfolio'
@@ -59,6 +60,13 @@ pipeline {
                         }
                     }
                 }
+                stage('gateway-service repo') {
+                    steps {
+                        dir('gateway-service') {
+                            git branch: 'main', credentialsId: env.GITHUB_CREDS_ID, url: env.GATEWAY_REPO
+                        }
+                    }
+                }
             }
         }
         stage('Unit tests') {
@@ -80,6 +88,13 @@ pipeline {
                 stage('orders-service tests') {
                     steps {
                         dir('orders-service') {
+                            sh env.MVN_TEST_CMD
+                        }
+                    }
+                }
+                stage('gateway-service tests') {
+                    steps {
+                        dir('gateway-service') {
                             sh env.MVN_TEST_CMD
                         }
                     }
@@ -131,6 +146,19 @@ pipeline {
                                     """
                                 }
                             }
+                        },
+                        'gateway-service sonar': {
+                            dir('gateway-service') {
+                                withSonarQubeEnv('sonarqube') {
+                                    sh """
+                                        ./mvnw -B sonar:sonar \\
+                                          -Dsonar.projectKey=gateway-service \\
+                                          -Dsonar.projectName=gateway-service \\
+                                          -Dsonar.host.url=$SONAR_HOST_URL \\
+                                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                                    """
+                                }
+                            }
                         }
                     )
                 }
@@ -160,6 +188,7 @@ pipeline {
                           --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1
                         docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh \\
                           --bootstrap-server localhost:9092 --describe --topic catalog-product-events
+                        docker compose -f infra-dev/docker-compose.yml exec -T gateway_service curl -sf http://localhost:8080/actuator/health
                     '''
                 }
             }
@@ -182,6 +211,11 @@ pipeline {
                             dir('orders-service') {
                                 sh "docker build -t ${env.IMAGE_NAMESPACE}/orders-service:${env.BUILD_NUMBER} ."
                             }
+                        },
+                        'gateway image': {
+                            dir('gateway-service') {
+                                sh "docker build -t ${env.IMAGE_NAMESPACE}/gateway-service:${env.BUILD_NUMBER} ."
+                            }
                         }
                     )
                 }
@@ -194,6 +228,8 @@ pipeline {
             steps {
                 dir('helm') {
                     sh """
+                        helm dependency update ./portfolio-stack
+                        helm upgrade --install portfolio-infra ./portfolio-infra
                         helm upgrade --install catalog-service catalog-service \\
                           --set image.repository=${env.IMAGE_NAMESPACE}/catalog-service \\
                           --set image.tag=${env.BUILD_NUMBER}
@@ -202,6 +238,9 @@ pipeline {
                           --set image.tag=${env.BUILD_NUMBER}
                         helm upgrade --install orders-service orders-service \\
                           --set image.repository=${env.IMAGE_NAMESPACE}/orders-service \\
+                          --set image.tag=${env.BUILD_NUMBER}
+                        helm upgrade --install gateway-service gateway-service \\
+                          --set image.repository=${env.IMAGE_NAMESPACE}/gateway-service \\
                           --set image.tag=${env.BUILD_NUMBER}
                     """
                 }
