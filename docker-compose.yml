@@ -1,0 +1,231 @@
+version: "3.9"
+
+services:
+  mysql-catalog:
+    image: mysql:8.0
+    container_name: mysql_catalog
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: catalogdb
+      MYSQL_USER: catalog_user
+      MYSQL_PASSWORD: catalog_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - catalog-mysql:/var/lib/mysql
+    networks:
+      - portfolio-net
+
+  mysql-users:
+    image: mysql:8.0
+    container_name: mysql_users
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: usersdb
+      MYSQL_USER: users_user
+      MYSQL_PASSWORD: users_pass
+    ports:
+      - "3308:3306"
+    volumes:
+      - users-mysql:/var/lib/mysql
+    networks:
+      - portfolio-net
+
+  mysql-orders:
+    image: mysql:8.0
+    container_name: mysql_orders
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ordersdb
+      MYSQL_USER: orders_user
+      MYSQL_PASSWORD: orders_pass
+    ports:
+      - "3309:3306"
+    volumes:
+      - orders-mysql:/var/lib/mysql
+    networks:
+      - portfolio-net
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - portfolio-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - portfolio-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - portfolio-net
+
+  keycloak-db:
+    image: postgres:15
+    container_name: keycloak_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloak-db:/var/lib/postgresql/data
+    networks:
+      - portfolio-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: keycloak
+    restart: unless-stopped
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: ["start-dev", "--http-relative-path=/auth"]
+    ports:
+      - "7080:8080"
+    depends_on:
+      - keycloak-db
+    networks:
+      - portfolio-net
+
+  catalog-service:
+    build:
+      context: ../catalog-service
+    container_name: catalog_service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-catalog:3306/catalogdb
+      SPRING_DATASOURCE_USERNAME: catalog_user
+      SPRING_DATASOURCE_PASSWORD: catalog_pass
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      SERVICES_USERS_BASE_URL: http://users-service:8082/api
+      SECURITY_OAUTH2_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+    depends_on:
+      - mysql-catalog
+      - elasticsearch
+      - mailhog
+    networks:
+      - portfolio-net
+
+  users-service:
+    build:
+      context: ../users-service
+    container_name: users_service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-users:3306/usersdb
+      SPRING_DATASOURCE_USERNAME: users_user
+      SPRING_DATASOURCE_PASSWORD: users_pass
+      SECURITY_OAUTH2_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+    depends_on:
+      - mysql-users
+    networks:
+      - portfolio-net
+
+  orders-service:
+    build:
+      context: ../orders-service
+    container_name: orders_service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-orders:3306/ordersdb
+      SPRING_DATASOURCE_USERNAME: orders_user
+      SPRING_DATASOURCE_PASSWORD: orders_pass
+      SERVICES_USERS_BASE_URL: http://users-service:8082/api
+      SERVICES_CATALOG_BASE_URL: http://catalog-service:8081/api
+      SECURITY_OAUTH2_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+    depends_on:
+      - mysql-orders
+      - catalog-service
+      - users-service
+    networks:
+      - portfolio-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: api_gateway
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - catalog-service
+      - users-service
+      - orders-service
+    networks:
+      - portfolio-net
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: jenkins
+    user: root
+    restart: unless-stopped
+    environment:
+      JAVA_OPTS: "-Dorg.apache.commons.jelly.tags.fmt.timeZone=UTC"
+    ports:
+      - "8090:8080"
+      - "50000:50000"
+    volumes:
+      - ../jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - catalog-service
+      - users-service
+      - orders-service
+    networks:
+      - portfolio-net
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    ports:
+      - "8088:8080"
+    networks:
+      - portfolio-net
+
+volumes:
+  catalog-mysql:
+  users-mysql:
+  orders-mysql:
+  keycloak-db:
+  elasticsearch-data:
+
+networks:
+  portfolio-net:
+    driver: bridge

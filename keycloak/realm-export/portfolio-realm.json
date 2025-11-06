@@ -1,0 +1,39 @@
+{
+  "realm": "portfolio",
+  "enabled": true,
+  "users": [
+    {
+      "username": "portfolio-admin",
+      "enabled": true,
+      "email": "admin@portfolio.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["portfolio_admin"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "portfolio-api",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "portfolio-api-secret",
+      "redirectUris": ["*"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "portfolio_admin"
+      },
+      {
+        "name": "catalog_admin"
+      }
+    ]
+  }
+}
