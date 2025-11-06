@@ -77,6 +77,18 @@ pipeline {
                 }
             }
         }
+        stage('Warmup mvnw') {
+            steps {
+                script {
+                    ['catalog-service', 'users-service', 'orders-service', 'gateway-service', 'notification-service'].each { svc ->
+                        dir(svc) {
+                            sh 'chmod +x mvnw'
+                            sh './mvnw -B -q --version'
+                        }
+                    }
+                }
+            }
+        }
         stage('Unit tests') {
             parallel {
                 stage('catalog-service tests') {
