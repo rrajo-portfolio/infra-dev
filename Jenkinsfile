@@ -7,13 +7,18 @@ pipeline {
     parameters {
         booleanParam(
             name: 'RUN_SONAR',
-            defaultValue: false,
-            description: 'Enabling this flag runs SonarQube analysis for each service (requires Sonar server + token).'
+            defaultValue: true,
+            description: 'Run SonarQube analysis for each service (requires Sonar server + token).'
         )
         booleanParam(
             name: 'RUN_DOCKER_SMOKE',
             defaultValue: false,
             description: 'Bring up the docker-compose stack for a smoke test (requires Docker on the agent).'
+        )
+        booleanParam(
+            name: 'RUN_HELM_DEPLOY',
+            defaultValue: false,
+            description: 'Deploy services to the current kube-context using Helm charts.'
         )
     }
     environment {
@@ -23,6 +28,7 @@ pipeline {
         ORDERS_REPO    = 'https://github.com/rrajo-portfolio/orders-service.git'
         MVN_TEST_CMD   = './mvnw -B test'
         SONAR_CMD      = './mvnw -B sonar:sonar'
+        IMAGE_NAMESPACE = 'rrajo-portfolio'
     }
     stages {
         stage('Checkout infra-dev') {
@@ -90,25 +96,53 @@ pipeline {
                         'catalog-service sonar': {
                             dir('catalog-service') {
                                 withSonarQubeEnv('sonarqube') {
-                                    sh env.SONAR_CMD
+                                    sh """
+                                        ./mvnw -B sonar:sonar \\
+                                          -Dsonar.projectKey=catalog-service \\
+                                          -Dsonar.projectName=catalog-service \\
+                                          -Dsonar.host.url=$SONAR_HOST_URL \\
+                                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                                    """
                                 }
                             }
                         },
                         'users-service sonar': {
                             dir('users-service') {
                                 withSonarQubeEnv('sonarqube') {
-                                    sh env.SONAR_CMD
+                                    sh """
+                                        ./mvnw -B sonar:sonar \\
+                                          -Dsonar.projectKey=users-service \\
+                                          -Dsonar.projectName=users-service \\
+                                          -Dsonar.host.url=$SONAR_HOST_URL \\
+                                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                                    """
                                 }
                             }
                         },
                         'orders-service sonar': {
                             dir('orders-service') {
                                 withSonarQubeEnv('sonarqube') {
-                                    sh env.SONAR_CMD
+                                    sh """
+                                        ./mvnw -B sonar:sonar \\
+                                          -Dsonar.projectKey=orders-service \\
+                                          -Dsonar.projectName=orders-service \\
+                                          -Dsonar.host.url=$SONAR_HOST_URL \\
+                                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                                    """
                                 }
                             }
                         }
                     )
+                }
+            }
+        }
+        stage('Sonar Quality Gate') {
+            when {
+                expression { return params.RUN_SONAR }
+            }
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -127,6 +161,49 @@ pipeline {
                         docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh \\
                           --bootstrap-server localhost:9092 --describe --topic catalog-product-events
                     '''
+                }
+            }
+        }
+        stage('Docker build & tag') {
+            steps {
+                script {
+                    parallel(
+                        'catalog image': {
+                            dir('catalog-service') {
+                                sh "docker build -t ${env.IMAGE_NAMESPACE}/catalog-service:${env.BUILD_NUMBER} ."
+                            }
+                        },
+                        'users image': {
+                            dir('users-service') {
+                                sh "docker build -t ${env.IMAGE_NAMESPACE}/users-service:${env.BUILD_NUMBER} ."
+                            }
+                        },
+                        'orders image': {
+                            dir('orders-service') {
+                                sh "docker build -t ${env.IMAGE_NAMESPACE}/orders-service:${env.BUILD_NUMBER} ."
+                            }
+                        }
+                    )
+                }
+            }
+        }
+        stage('Helm deploy') {
+            when {
+                expression { return params.RUN_HELM_DEPLOY }
+            }
+            steps {
+                dir('helm') {
+                    sh """
+                        helm upgrade --install catalog-service catalog-service \\
+                          --set image.repository=${env.IMAGE_NAMESPACE}/catalog-service \\
+                          --set image.tag=${env.BUILD_NUMBER}
+                        helm upgrade --install users-service users-service \\
+                          --set image.repository=${env.IMAGE_NAMESPACE}/users-service \\
+                          --set image.tag=${env.BUILD_NUMBER}
+                        helm upgrade --install orders-service orders-service \\
+                          --set image.repository=${env.IMAGE_NAMESPACE}/orders-service \\
+                          --set image.tag=${env.BUILD_NUMBER}
+                    """
                 }
             }
         }
