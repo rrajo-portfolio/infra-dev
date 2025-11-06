@@ -207,6 +207,11 @@ services:
       SERVICES_CATALOG_BASE_URL: http://catalog-service:8081/api
       SECURITY_OAUTH2_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
       SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: rabbit
+      SPRING_RABBITMQ_PASSWORD: rabbit
+      ORDERS_NOTIFICATION_ENABLED: "true"
     depends_on:
       - mysql-orders
       - catalog-service
@@ -248,6 +253,24 @@ services:
     networks:
       - portfolio-net
 
+  notification-service:
+    build:
+      context: ../notification-service
+    container_name: notification_service
+    restart: unless-stopped
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: rabbit
+      SPRING_RABBITMQ_PASSWORD: rabbit
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    depends_on:
+      - rabbitmq
+      - mailhog
+    networks:
+      - portfolio-net
+
   jenkins:
     image: jenkins/jenkins:lts-jdk17
     container_name: jenkins
@@ -274,6 +297,19 @@ services:
     restart: unless-stopped
     ports:
       - "8088:8080"
+    networks:
+      - portfolio-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - portfolio-net
 

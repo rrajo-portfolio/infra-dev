@@ -27,6 +27,7 @@ pipeline {
         USERS_REPO     = 'https://github.com/rrajo-portfolio/users-service.git'
         ORDERS_REPO    = 'https://github.com/rrajo-portfolio/orders-service.git'
         GATEWAY_REPO   = 'https://github.com/rrajo-portfolio/gateway-service.git'
+        NOTIFICATION_REPO = 'https://github.com/rrajo-portfolio/notification-service.git'
         MVN_TEST_CMD   = './mvnw -B test'
         SONAR_CMD      = './mvnw -B sonar:sonar'
         IMAGE_NAMESPACE = 'rrajo-portfolio'
@@ -67,6 +68,13 @@ pipeline {
                         }
                     }
                 }
+                stage('notification-service repo') {
+                    steps {
+                        dir('notification-service') {
+                            git branch: 'main', credentialsId: env.GITHUB_CREDS_ID, url: env.NOTIFICATION_REPO
+                        }
+                    }
+                }
             }
         }
         stage('Unit tests') {
@@ -95,6 +103,13 @@ pipeline {
                 stage('gateway-service tests') {
                     steps {
                         dir('gateway-service') {
+                            sh env.MVN_TEST_CMD
+                        }
+                    }
+                }
+                stage('notification-service tests') {
+                    steps {
+                        dir('notification-service') {
                             sh env.MVN_TEST_CMD
                         }
                     }
@@ -159,6 +174,19 @@ pipeline {
                                     """
                                 }
                             }
+                        },
+                        'notification-service sonar': {
+                            dir('notification-service') {
+                                withSonarQubeEnv('sonarqube') {
+                                    sh """
+                                        ./mvnw -B sonar:sonar \\
+                                          -Dsonar.projectKey=notification-service \\
+                                          -Dsonar.projectName=notification-service \\
+                                          -Dsonar.host.url=$SONAR_HOST_URL \\
+                                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                                    """
+                                }
+                            }
                         }
                     )
                 }
@@ -179,17 +207,21 @@ pipeline {
                 expression { return params.RUN_DOCKER_SMOKE }
             }
             steps {
-                dir(env.WORKSPACE) {
-                    sh 'docker compose -f infra-dev/docker-compose.yml down --remove-orphans || true'
-                    sh 'docker compose -f infra-dev/docker-compose.yml up -d --build'
-                    sh '''
-                        docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh \\
-                          --bootstrap-server localhost:9092 \\
-                          --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1
-                        docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh \\
-                          --bootstrap-server localhost:9092 --describe --topic catalog-product-events
-                        docker compose -f infra-dev/docker-compose.yml exec -T gateway_service curl -sf http://localhost:8080/actuator/health
-                    '''
+                script {
+                    dir(env.WORKSPACE) {
+                        try {
+                            sh 'docker compose -f infra-dev/docker-compose.yml down --remove-orphans || true'
+                            sh 'docker compose -f infra-dev/docker-compose.yml up -d --build'
+                            sh '''
+                                docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1
+                                docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic catalog-product-events
+                                docker compose -f infra-dev/docker-compose.yml exec -T gateway_service curl -sf http://localhost:8080/actuator/health
+                                docker compose -f infra-dev/docker-compose.yml exec -T notification_service curl -sf http://localhost:8080/actuator/health
+                            '''
+                        } finally {
+                            sh 'docker compose -f infra-dev/docker-compose.yml down --remove-orphans || true'
+                        }
+                    }
                 }
             }
         }
@@ -215,6 +247,11 @@ pipeline {
                         'gateway image': {
                             dir('gateway-service') {
                                 sh "docker build -t ${env.IMAGE_NAMESPACE}/gateway-service:${env.BUILD_NUMBER} ."
+                            }
+                        },
+                        'notification image': {
+                            dir('notification-service') {
+                                sh "docker build -t ${env.IMAGE_NAMESPACE}/notification-service:${env.BUILD_NUMBER} ."
                             }
                         }
                     )
@@ -242,6 +279,9 @@ pipeline {
                         helm upgrade --install gateway-service gateway-service \\
                           --set image.repository=${env.IMAGE_NAMESPACE}/gateway-service \\
                           --set image.tag=${env.BUILD_NUMBER}
+                        helm upgrade --install notification-service notification-service \\
+                          --set image.repository=${env.IMAGE_NAMESPACE}/notification-service \\
+                          --set image.tag=${env.BUILD_NUMBER}
                     """
                 }
             }
@@ -249,11 +289,10 @@ pipeline {
     }
     post {
         always {
-            script {
-                sh 'docker compose -f infra-dev/docker-compose.yml down --remove-orphans || true'
-            }
             junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
             archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
         }
     }
 }
+
+
