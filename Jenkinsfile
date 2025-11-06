@@ -82,6 +82,7 @@ pipeline {
                 stage('catalog-service tests') {
                     steps {
                         dir('catalog-service') {
+                            sh 'chmod +x mvnw'
                             sh env.MVN_TEST_CMD
                         }
                     }
@@ -89,6 +90,7 @@ pipeline {
                 stage('users-service tests') {
                     steps {
                         dir('users-service') {
+                            sh 'chmod +x mvnw'
                             sh env.MVN_TEST_CMD
                         }
                     }
@@ -96,6 +98,7 @@ pipeline {
                 stage('orders-service tests') {
                     steps {
                         dir('orders-service') {
+                            sh 'chmod +x mvnw'
                             sh env.MVN_TEST_CMD
                         }
                     }
@@ -103,6 +106,7 @@ pipeline {
                 stage('gateway-service tests') {
                     steps {
                         dir('gateway-service') {
+                            sh 'chmod +x mvnw'
                             sh env.MVN_TEST_CMD
                         }
                     }
@@ -110,6 +114,7 @@ pipeline {
                 stage('notification-service tests') {
                     steps {
                         dir('notification-service') {
+                            sh 'chmod +x mvnw'
                             sh env.MVN_TEST_CMD
                         }
                     }
@@ -125,6 +130,7 @@ pipeline {
                     parallel(
                         'catalog-service sonar': {
                             dir('catalog-service') {
+                                sh 'chmod +x mvnw'
                                 withSonarQubeEnv('sonarqube') {
                                     sh """
                                         ./mvnw -B sonar:sonar \\
@@ -138,6 +144,7 @@ pipeline {
                         },
                         'users-service sonar': {
                             dir('users-service') {
+                                sh 'chmod +x mvnw'
                                 withSonarQubeEnv('sonarqube') {
                                     sh """
                                         ./mvnw -B sonar:sonar \\
@@ -151,6 +158,7 @@ pipeline {
                         },
                         'orders-service sonar': {
                             dir('orders-service') {
+                                sh 'chmod +x mvnw'
                                 withSonarQubeEnv('sonarqube') {
                                     sh """
                                         ./mvnw -B sonar:sonar \\
@@ -164,6 +172,7 @@ pipeline {
                         },
                         'gateway-service sonar': {
                             dir('gateway-service') {
+                                sh 'chmod +x mvnw'
                                 withSonarQubeEnv('sonarqube') {
                                     sh """
                                         ./mvnw -B sonar:sonar \\
@@ -177,6 +186,7 @@ pipeline {
                         },
                         'notification-service sonar': {
                             dir('notification-service') {
+                                sh 'chmod +x mvnw'
                                 withSonarQubeEnv('sonarqube') {
                                     sh """
                                         ./mvnw -B sonar:sonar \\
