@@ -17,7 +17,7 @@ pipeline {
         )
     }
     environment {
-        GITHUB_CREDS   = credentials('github-portfolio')
+        GITHUB_CREDS_ID = 'github-pat'
         CATALOG_REPO   = 'https://github.com/rrajo-portfolio/catalog-service.git'
         USERS_REPO     = 'https://github.com/rrajo-portfolio/users-service.git'
         ORDERS_REPO    = 'https://github.com/rrajo-portfolio/orders-service.git'
@@ -35,21 +35,21 @@ pipeline {
                 stage('catalog-service repo') {
                     steps {
                         dir('catalog-service') {
-                            git branch: 'main', credentialsId: env.GITHUB_CREDS, url: env.CATALOG_REPO
+                            git branch: 'main', credentialsId: env.GITHUB_CREDS_ID, url: env.CATALOG_REPO
                         }
                     }
                 }
                 stage('users-service repo') {
                     steps {
                         dir('users-service') {
-                            git branch: 'main', credentialsId: env.GITHUB_CREDS, url: env.USERS_REPO
+                            git branch: 'main', credentialsId: env.GITHUB_CREDS_ID, url: env.USERS_REPO
                         }
                     }
                 }
                 stage('orders-service repo') {
                     steps {
                         dir('orders-service') {
-                            git branch: 'main', credentialsId: env.GITHUB_CREDS, url: env.ORDERS_REPO
+                            git branch: 'main', credentialsId: env.GITHUB_CREDS_ID, url: env.ORDERS_REPO
                         }
                     }
                 }
