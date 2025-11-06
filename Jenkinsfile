@@ -126,7 +126,7 @@ pipeline {
     }
     post {
         always {
-            dir(env.WORKSPACE) {
+            script {
                 sh 'docker compose -f infra-dev/docker-compose.yml down --remove-orphans || true'
             }
             junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
