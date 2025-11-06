@@ -87,6 +87,28 @@ services:
     networks:
       - portfolio-net
 
+  kafka:
+    image: bitnami/kafka:3.7.0
+    container_name: kafka
+    restart: unless-stopped
+    environment:
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:9094
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    ports:
+      - "9094:9094"
+    volumes:
+      - kafka-data:/bitnami/kafka
+    networks:
+      - portfolio-net
+
   keycloak-db:
     image: postgres:15
     container_name: keycloak_db
@@ -132,10 +154,13 @@ services:
       SERVICES_USERS_BASE_URL: http://users-service:8082/api
       SECURITY_OAUTH2_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
       SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      CATALOG_EVENTS_TOPIC: catalog-product-events
     depends_on:
       - mysql-catalog
       - elasticsearch
       - mailhog
+      - kafka
     networks:
       - portfolio-net
 
@@ -225,6 +250,7 @@ volumes:
   orders-mysql:
   keycloak-db:
   elasticsearch-data:
+  kafka-data:
 
 networks:
   portfolio-net:
