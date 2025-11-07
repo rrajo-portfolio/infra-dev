@@ -252,7 +252,8 @@ pipeline {
                         "JENKINS_AGENT_PORT=25000",
                         "ADMINER_HTTP_PORT=18088",
                         "RABBITMQ_AMQP_PORT=25672",
-                        "RABBITMQ_HTTP_PORT=35672"
+                        "RABBITMQ_HTTP_PORT=35672",
+                        "NGINX_CONF_PATH=${env.WORKSPACE}/nginx/nginx.conf"
                     ]) {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
