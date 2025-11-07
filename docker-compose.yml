@@ -360,14 +360,23 @@ services:
 
 volumes:
   catalog-mysql:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_catalog-mysql
   users-mysql:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_users-mysql
   orders-mysql:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_orders-mysql
   keycloak-db:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_keycloak-db
   elasticsearch-data:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_elasticsearch-data
   kafka-data:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_kafka-data
   sonarqube-data:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_sonarqube-data
   sonarqube-logs:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_sonarqube-logs
   sonarqube-extensions:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_sonarqube-extensions
 
 networks:
   portfolio-net:

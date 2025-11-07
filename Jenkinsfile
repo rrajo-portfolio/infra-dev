@@ -235,6 +235,7 @@ pipeline {
                         "SERVICES_ROOT=.",
                         "COMPOSE_PROJECT_NAME=portfolio",
                         "CONTAINER_PREFIX=ci-",
+                        "VOLUME_NAMESPACE=ci",
                         "CATALOG_DB_PORT=13307",
                         "USERS_DB_PORT=13308",
                         "ORDERS_DB_PORT=13309",
@@ -256,7 +257,7 @@ pipeline {
                         "NGINX_BUILD_CONTEXT=${env.WORKSPACE}/nginx"
                     ]) {
                         try {
-                            sh "docker compose -f ${composeFile} down --remove-orphans || true"
+                            sh "docker compose -f ${composeFile} down --volumes --remove-orphans || true"
                             sh "docker compose -f ${composeFile} up -d --build"
                             sh """
                                 ATTEMPTS=0
@@ -277,7 +278,7 @@ pipeline {
                                 docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health
                             """
                         } finally {
-                            sh "docker compose -f ${composeFile} down --remove-orphans || true"
+                            sh "docker compose -f ${composeFile} down --volumes --remove-orphans || true"
                         }
                     }
                 }
