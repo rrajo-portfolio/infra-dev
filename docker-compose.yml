@@ -277,6 +277,7 @@ services:
     restart: unless-stopped
     environment:
       SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+      SONARQUBE_JAVAOPTS: "-Xms1g -Xmx2g"
     ports:
       - "9000:9000"
     volumes:
