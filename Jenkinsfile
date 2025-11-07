@@ -262,7 +262,7 @@ pipeline {
                                 ATTEMPTS=0
                                 until docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --list >/dev/null 2>&1; do
                                     ATTEMPTS=\$((ATTEMPTS+1))
-                                    if [ \$ATTEMPTS -ge 12 ]; then
+                                    if [ \$ATTEMPTS -ge 30 ]; then
                                         echo "Kafka broker did not become ready in time"
                                         exit 1
                                     fi
