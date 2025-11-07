@@ -4,6 +4,10 @@ services:
   mysql-catalog:
     image: mysql:8.0
     container_name: ${CONTAINER_PREFIX:-}mysql_catalog
+    deploy:
+      resources:
+        reservations:
+          memory: "${MYSQL_CATALOG_MEM:-512m}"
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -20,6 +24,10 @@ services:
   mysql-users:
     image: mysql:8.0
     container_name: ${CONTAINER_PREFIX:-}mysql_users
+    deploy:
+      resources:
+        reservations:
+          memory: "${MYSQL_USERS_MEM:-512m}"
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -36,6 +44,10 @@ services:
   mysql-orders:
     image: mysql:8.0
     container_name: ${CONTAINER_PREFIX:-}mysql_orders
+    deploy:
+      resources:
+        reservations:
+          memory: "${MYSQL_ORDERS_MEM:-512m}"
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -62,6 +74,10 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
     container_name: ${CONTAINER_PREFIX:-}elasticsearch
+    deploy:
+      resources:
+        reservations:
+          memory: "${ELASTICSEARCH_MEM:-1g}"
     restart: unless-stopped
     environment:
       - discovery.type=single-node
@@ -102,6 +118,10 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: ${CONTAINER_PREFIX:-}kafka
+    deploy:
+      resources:
+        reservations:
+          memory: "${KAFKA_MEM:-768m}"
     restart: unless-stopped
     environment:
       KAFKA_BROKER_ID: 1
@@ -139,6 +159,10 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
     container_name: ${CONTAINER_PREFIX:-}keycloak
+    deploy:
+      resources:
+        reservations:
+          memory: "${KEYCLOAK_MEM:-512m}"
     restart: unless-stopped
     environment:
       KC_DB: postgres
@@ -274,6 +298,10 @@ services:
   sonarqube:
     image: sonarqube:lts-community
     container_name: ${CONTAINER_PREFIX:-}sonarqube
+    deploy:
+      resources:
+        reservations:
+          memory: "${SONARQUBE_MEM:-1g}"
     restart: unless-stopped
     environment:
       SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
