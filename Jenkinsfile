@@ -231,7 +231,7 @@ pipeline {
             steps {
                 script {
                     def composeFile = "${env.WORKSPACE}/docker-compose.yml"
-                    withEnv(["SERVICES_ROOT=.", "COMPOSE_PROJECT_NAME=portfolio"]) {
+                    withEnv(["SERVICES_ROOT=.", "COMPOSE_PROJECT_NAME=portfolio", "CONTAINER_PREFIX=ci-"]) {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                             sh "docker compose -f ${composeFile} up -d --build"
