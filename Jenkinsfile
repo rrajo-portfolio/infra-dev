@@ -259,8 +259,8 @@ pipeline {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                             sh "docker compose -f ${composeFile} up -d --build"
                             sh """
-                                docker compose -f ${composeFile} exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1
-                                docker compose -f ${composeFile} exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic catalog-product-events
+                                docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1
+                                docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --describe --topic catalog-product-events
                                 docker compose -f ${composeFile} exec -T gateway_service curl -sf http://localhost:8080/actuator/health
                                 docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health
                             """
