@@ -230,7 +230,7 @@ pipeline {
             }
             steps {
                 script {
-                    dir(env.WORKSPACE) {
+                    dir('infra-dev') {
                         try {
                             sh 'docker compose -f docker-compose.yml down --remove-orphans || true'
                             sh 'docker compose -f docker-compose.yml up -d --build'
