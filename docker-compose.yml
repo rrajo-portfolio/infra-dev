@@ -157,7 +157,7 @@ services:
 
   catalog-service:
     build:
-      context: ../catalog-service
+      context: ${SERVICES_ROOT:-..}/catalog-service
     container_name: catalog_service
     restart: unless-stopped
     environment:
@@ -180,7 +180,7 @@ services:
 
   users-service:
     build:
-      context: ../users-service
+      context: ${SERVICES_ROOT:-..}/users-service
     container_name: users_service
     restart: unless-stopped
     environment:
@@ -196,7 +196,7 @@ services:
 
   orders-service:
     build:
-      context: ../orders-service
+      context: ${SERVICES_ROOT:-..}/orders-service
     container_name: orders_service
     restart: unless-stopped
     environment:
@@ -235,7 +235,7 @@ services:
       - portfolio-net
   gateway-service:
     build:
-      context: ../gateway-service
+      context: ${SERVICES_ROOT:-..}/gateway-service
     container_name: gateway_service
     restart: unless-stopped
     environment:
@@ -255,7 +255,7 @@ services:
 
   notification-service:
     build:
-      context: ../notification-service
+      context: ${SERVICES_ROOT:-..}/notification-service
     container_name: notification_service
     restart: unless-stopped
     environment:
@@ -299,7 +299,7 @@ services:
       - "8090:8080"
       - "50000:50000"
     volumes:
-      - ../jenkins:/var/jenkins_home
+      - ${SERVICES_ROOT:-..}/jenkins:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - catalog-service
