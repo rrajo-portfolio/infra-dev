@@ -258,6 +258,18 @@ pipeline {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                             sh "docker compose -f ${composeFile} up -d --build"
+                            sh """
+                                ATTEMPTS=0
+                                until docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --list >/dev/null 2>&1; do
+                                    ATTEMPTS=\$((ATTEMPTS+1))
+                                    if [ \$ATTEMPTS -ge 12 ]; then
+                                        echo "Kafka broker did not become ready in time"
+                                        exit 1
+                                    fi
+                                    echo "Kafka not ready yet, retrying..."
+                                    sleep 5
+                                done
+                            """
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --describe --topic catalog-product-events"
                             sh """
