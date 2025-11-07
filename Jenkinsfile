@@ -231,7 +231,29 @@ pipeline {
             steps {
                 script {
                     def composeFile = "${env.WORKSPACE}/docker-compose.yml"
-                    withEnv(["SERVICES_ROOT=.", "COMPOSE_PROJECT_NAME=portfolio", "CONTAINER_PREFIX=ci-"]) {
+                    withEnv([
+                        "SERVICES_ROOT=.",
+                        "COMPOSE_PROJECT_NAME=portfolio",
+                        "CONTAINER_PREFIX=ci-",
+                        "CATALOG_DB_PORT=13307",
+                        "USERS_DB_PORT=13308",
+                        "ORDERS_DB_PORT=13309",
+                        "MAILHOG_HTTP_PORT=18025",
+                        "MAILHOG_SMTP_PORT=11025",
+                        "ELASTIC_HTTP_PORT=19200",
+                        "KIBANA_HTTP_PORT=15601",
+                        "ZOOKEEPER_PORT=22181",
+                        "KAFKA_PORT=19094",
+                        "KEYCLOAK_HTTP_PORT=17080",
+                        "NGINX_HTTP_PORT=18080",
+                        "GATEWAY_HTTP_PORT=18085",
+                        "SONAR_HTTP_PORT=19000",
+                        "JENKINS_HTTP_PORT=18090",
+                        "JENKINS_AGENT_PORT=25000",
+                        "ADMINER_HTTP_PORT=18088",
+                        "RABBITMQ_AMQP_PORT=25672",
+                        "RABBITMQ_HTTP_PORT=35672"
+                    ]) {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                             sh "docker compose -f ${composeFile} up -d --build"
