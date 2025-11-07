@@ -232,16 +232,16 @@ pipeline {
                 script {
                     dir(env.WORKSPACE) {
                         try {
-                            sh 'docker compose -f infra-dev/docker-compose.yml down --remove-orphans || true'
-                            sh 'docker compose -f infra-dev/docker-compose.yml up -d --build'
+                            sh 'docker compose -f docker-compose.yml down --remove-orphans || true'
+                            sh 'docker compose -f docker-compose.yml up -d --build'
                             sh '''
-                                docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1
-                                docker compose -f infra-dev/docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic catalog-product-events
-                                docker compose -f infra-dev/docker-compose.yml exec -T gateway_service curl -sf http://localhost:8080/actuator/health
-                                docker compose -f infra-dev/docker-compose.yml exec -T notification_service curl -sf http://localhost:8080/actuator/health
+                                docker compose -f docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1
+                                docker compose -f docker-compose.yml exec -T kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic catalog-product-events
+                                docker compose -f docker-compose.yml exec -T gateway_service curl -sf http://localhost:8080/actuator/health
+                                docker compose -f docker-compose.yml exec -T notification_service curl -sf http://localhost:8080/actuator/health
                             '''
                         } finally {
-                            sh 'docker compose -f infra-dev/docker-compose.yml down --remove-orphans || true'
+                            sh 'docker compose -f docker-compose.yml down --remove-orphans || true'
                         }
                     }
                 }

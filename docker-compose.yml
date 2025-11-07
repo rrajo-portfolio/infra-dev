@@ -271,8 +271,24 @@ services:
     networks:
       - portfolio-net
 
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sonarqube
+    restart: unless-stopped
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-extensions:/opt/sonarqube/extensions
+    networks:
+      - portfolio-net
+
   jenkins:
-    image: jenkins/jenkins:lts-jdk17
+    build:
+      context: ./jenkins
     container_name: jenkins
     user: root
     restart: unless-stopped
@@ -320,6 +336,9 @@ volumes:
   keycloak-db:
   elasticsearch-data:
   kafka-data:
+  sonarqube-data:
+  sonarqube-logs:
+  sonarqube-extensions:
 
 networks:
   portfolio-net:
