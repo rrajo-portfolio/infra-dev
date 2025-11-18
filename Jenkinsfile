@@ -156,11 +156,11 @@ pipeline {
                                 dir('catalog-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \\\\
-                                          -Dsonar.projectKey=catalog-service \\\\
-                                          -Dsonar.projectName=catalog-service \\\\
-                                          -Dsonar.host.url=\\\\\\\\${env.SONAR_HOST_URL} \\\\
-                                          -Dsonar.login=\\\\\\\\$SONAR_TOKEN
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=catalog-service \
+                                          -Dsonar.projectName=catalog-service \
+                                          -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=\\$SONAR_TOKEN
                                     """
                                 }
                             },
@@ -168,11 +168,11 @@ pipeline {
                                 dir('users-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \\\\
-                                          -Dsonar.projectKey=users-service \\\\
-                                          -Dsonar.projectName=users-service \\\\
-                                          -Dsonar.host.url=\\\\\\\\${env.SONAR_HOST_URL} \\\\
-                                          -Dsonar.login=\\\\\\\\$SONAR_TOKEN
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=users-service \
+                                          -Dsonar.projectName=users-service \
+                                          -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=\\$SONAR_TOKEN
                                     """
                                 }
                             },
@@ -180,11 +180,11 @@ pipeline {
                                 dir('orders-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \\\\
-                                          -Dsonar.projectKey=orders-service \\\\
-                                          -Dsonar.projectName=orders-service \\\\
-                                          -Dsonar.host.url=\\\\\\\\${env.SONAR_HOST_URL} \\\\
-                                          -Dsonar.login=\\\\\\\\$SONAR_TOKEN
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=orders-service \
+                                          -Dsonar.projectName=orders-service \
+                                          -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=\\$SONAR_TOKEN
                                     """
                                 }
                             },
@@ -192,11 +192,11 @@ pipeline {
                                 dir('gateway-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \\\\
-                                          -Dsonar.projectKey=gateway-service \\\\
-                                          -Dsonar.projectName=gateway-service \\\\
-                                          -Dsonar.host.url=\\\\\\\\${env.SONAR_HOST_URL} \\\\
-                                          -Dsonar.login=\\\\\\\\$SONAR_TOKEN
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=gateway-service \
+                                          -Dsonar.projectName=gateway-service \
+                                          -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=\\$SONAR_TOKEN
                                     """
                                 }
                             },
@@ -204,11 +204,11 @@ pipeline {
                                 dir('notification-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \\\\
-                                          -Dsonar.projectKey=notification-service \\\\
-                                          -Dsonar.projectName=notification-service \\\\
-                                          -Dsonar.host.url=\\\\\\\\${env.SONAR_HOST_URL} \\\\
-                                          -Dsonar.login=\\\\\\\\$SONAR_TOKEN
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=notification-service \
+                                          -Dsonar.projectName=notification-service \
+                                          -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=\\$SONAR_TOKEN
                                     """
                                 }
                             }
@@ -234,7 +234,7 @@ pipeline {
             }
             steps {
                 script {
-                    def composeFile = "\\\\\\\\${env.WORKSPACE}/docker-compose.yml"
+                    def composeFile = "\\${env.WORKSPACE}/docker-compose.yml"
                     withEnv([
                         "SERVICES_ROOT=.",
                         "COMPOSE_PROJECT_NAME=portfolio",
@@ -258,16 +258,16 @@ pipeline {
                         "ADMINER_HTTP_PORT=18088",
                         "RABBITMQ_AMQP_PORT=25672",
                         "RABBITMQ_HTTP_PORT=35672",
-                        "NGINX_BUILD_CONTEXT=\\\\\\\\${env.WORKSPACE}/nginx"
+                        "NGINX_BUILD_CONTEXT=\\${env.WORKSPACE}/nginx"
                     ]) {
                         try {
-                            sh "docker compose -f \\\\\\\\${composeFile} down --remove-orphans || true"
-                            sh "docker compose -f \\\\\\\\${composeFile} up -d --build"
+                            sh "docker compose -f \\${composeFile} down --remove-orphans || true"
+                            sh "docker compose -f \\${composeFile} up -d --build"
                             sh """
                                 ATTEMPTS=0
-                                until docker compose -f \\\\\\\\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --list >/dev/null 2>&1; do
-                                    ATTEMPTS=\\\\\\\\\\\\$((ATTEMPTS+1))
-                                    if [ \\\\\\\\\\\\$ATTEMPTS -ge 30 ]; then
+                                until docker compose -f \\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --list >/dev/null 2>&1; do
+                                    ATTEMPTS=\\\$((ATTEMPTS+1))
+                                    if [ \\\$ATTEMPTS -ge 30 ]; then
                                         echo "Kafka broker did not become ready in time"
                                         exit 1
                                     fi
@@ -275,8 +275,8 @@ pipeline {
                                     sleep 5
                                 done
                             """
-                            sh "docker compose -f \\\\\\\\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
-                            sh "docker compose -f \\\\\\\\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --describe --topic catalog-product-events"
+                            sh "docker compose -f \\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
+                            sh "docker compose -f \\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --describe --topic catalog-product-events"
                             sh """
                                 cat <<'EOF' > wait-for-service.sh
 #!/usr/bin/env bash
@@ -286,16 +286,16 @@ COMPOSE_FILE="$1"
 SERVICE="$2"
 MAX_ATTEMPTS="$3"
 shift 3
-CMD=("\\\\$@")
+CMD=("\$@")
 
 attempts=0
-until docker compose -f "\\\\${COMPOSE_FILE}" exec -T "\\\\${SERVICE}" "\\\\${CMD[@]}" >/dev/null 2>&1; do
-  attempts=\\\\$((attempts+1))
-  if [ "\\\\${attempts}" -ge "\\\\${MAX_ATTEMPTS}" ]; then
-    echo "\\\\${SERVICE} did not become healthy in time"
+until docker compose -f "\${COMPOSE_FILE}" exec -T "\${SERVICE}" "\${CMD[@]}" >/dev/null 2>&1; do
+  attempts=\$((attempts+1))
+  if [ "\${attempts}" -ge "\${MAX_ATTEMPTS}" ]; then
+    echo "\${SERVICE} did not become healthy in time"
     exit 1
   fi
-  echo "\\\\${SERVICE} not ready yet, retrying..."
+  echo "\${SERVICE} not ready yet, retrying..."
   sleep 5
 done
 EOF
@@ -306,7 +306,7 @@ EOF
                                 docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health
                             """
                         } finally {
-                            sh "docker compose -f \\\\\\\\${composeFile} down --remove-orphans || true"
+                            sh "docker compose -f \\${composeFile} down --remove-orphans || true"
                         }
                     }
                 }
@@ -318,27 +318,27 @@ EOF
                     parallel(
                         'catalog image': {
                             dir('catalog-service') {
-                                sh "docker build -t \\\\\\\\${env.IMAGE_NAMESPACE}/catalog-service:\\\\\\\\${env.BUILD_NUMBER} ."
+                                sh "docker build -t \\${env.IMAGE_NAMESPACE}/catalog-service:\\${env.BUILD_NUMBER} ."
                             }
                         },
                         'users image': {
                             dir('users-service') {
-                                sh "docker build -t \\\\\\\\${env.IMAGE_NAMESPACE}/users-service:\\\\\\\\${env.BUILD_NUMBER} ."
+                                sh "docker build -t \\${env.IMAGE_NAMESPACE}/users-service:\\${env.BUILD_NUMBER} ."
                             }
                         },
                         'orders image': {
                             dir('orders-service') {
-                                sh "docker build -t \\\\\\\\${env.IMAGE_NAMESPACE}/orders-service:\\\\\\\\${env.BUILD_NUMBER} ."
+                                sh "docker build -t \\${env.IMAGE_NAMESPACE}/orders-service:\\${env.BUILD_NUMBER} ."
                             }
                         },
                         'gateway image': {
                             dir('gateway-service') {
-                                sh "docker build -t \\\\\\\\${env.IMAGE_NAMESPACE}/gateway-service:\\\\\\\\${env.BUILD_NUMBER} ."
+                                sh "docker build -t \\${env.IMAGE_NAMESPACE}/gateway-service:\\${env.BUILD_NUMBER} ."
                             }
                         },
                         'notification image': {
                             dir('notification-service') {
-                                sh "docker build -t \\\\\\\\${env.IMAGE_NAMESPACE}/notification-service:\\\\\\\\${env.BUILD_NUMBER} ."
+                                sh "docker build -t \\${env.IMAGE_NAMESPACE}/notification-service:\\${env.BUILD_NUMBER} ."
                             }
                         }
                     )
@@ -354,21 +354,21 @@ EOF
                     sh """
                         helm dependency update ./portfolio-stack
                         helm upgrade --install portfolio-infra ./portfolio-infra
-                        helm upgrade --install catalog-service catalog-service \\\\\\\\
-                          --set image.repository=\\\\\\\\${env.IMAGE_NAMESPACE}/catalog-service \\\\\\\\
-                          --set image.tag=\\\\\\\\${env.BUILD_NUMBER}
-                        helm upgrade --install users-service users-service \\\\\\\\
-                          --set image.repository=\\\\\\\\${env.IMAGE_NAMESPACE}/users-service \\\\\\\\
-                          --set image.tag=\\\\\\\\${env.BUILD_NUMBER}
-                        helm upgrade --install orders-service orders-service \\\\\\\\
-                          --set image.repository=\\\\\\\\${env.IMAGE_NAMESPACE}/orders-service \\\\\\\\
-                          --set image.tag=\\\\\\\\${env.BUILD_NUMBER}
-                        helm upgrade --install gateway-service gateway-service \\\\\\\\
-                          --set image.repository=\\\\\\\\${env.IMAGE_NAMESPACE}/gateway-service \\\\\\\\
-                          --set image.tag=\\\\\\\\${env.BUILD_NUMBER}
-                        helm upgrade --install notification-service notification-service \\\\\\\\
-                          --set image.repository=\\\\\\\\${env.IMAGE_NAMESPACE}/notification-service \\\\\\\\
-                          --set image.tag=\\\\\\\\${env.BUILD_NUMBER}
+                        helm upgrade --install catalog-service catalog-service \\
+                          --set image.repository=\\${env.IMAGE_NAMESPACE}/catalog-service \\
+                          --set image.tag=\\${env.BUILD_NUMBER}
+                        helm upgrade --install users-service users-service \\
+                          --set image.repository=\\${env.IMAGE_NAMESPACE}/users-service \\
+                          --set image.tag=\\${env.BUILD_NUMBER}
+                        helm upgrade --install orders-service orders-service \\
+                          --set image.repository=\\${env.IMAGE_NAMESPACE}/orders-service \\
+                          --set image.tag=\\${env.BUILD_NUMBER}
+                        helm upgrade --install gateway-service gateway-service \\
+                          --set image.repository=\\${env.IMAGE_NAMESPACE}/gateway-service \\
+                          --set image.tag=\\${env.BUILD_NUMBER}
+                        helm upgrade --install notification-service notification-service \\
+                          --set image.repository=\\${env.IMAGE_NAMESPACE}/notification-service \\
+                          --set image.tag=\\${env.BUILD_NUMBER}
                     """
                 }
             }
@@ -381,8 +381,6 @@ EOF
         }
     }
 }
-
-
 
 
 
