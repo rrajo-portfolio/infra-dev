@@ -292,7 +292,7 @@ pipeline {
                                 docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health
                             """
                         } finally {
-                            sh "docker compose -f ${composeFile} down --volumes --remove-orphans || true"
+                            sh "docker compose -f ${composeFile} down --remove-orphans || true"
                         }
                     }
                 }
@@ -367,6 +367,5 @@ pipeline {
         }
     }
 }
-
 
 

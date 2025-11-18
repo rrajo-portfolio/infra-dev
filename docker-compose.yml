@@ -190,8 +190,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: catalog_pass
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
       SERVICES_USERS_BASE_URL: http://users-service:8082/api
-      SECURITY_OAUTH2_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
-      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+      SECURITY_OAUTH2_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       CATALOG_EVENTS_TOPIC: catalog-product-events
     depends_on:
@@ -211,8 +211,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-users:3306/usersdb
       SPRING_DATASOURCE_USERNAME: users_user
       SPRING_DATASOURCE_PASSWORD: users_pass
-      SECURITY_OAUTH2_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
-      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+      SECURITY_OAUTH2_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
     depends_on:
       - mysql-users
     networks:
@@ -229,8 +229,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: orders_pass
       SERVICES_USERS_BASE_URL: http://users-service:8082/api
       SERVICES_CATALOG_BASE_URL: http://catalog-service:8081/api
-      SECURITY_OAUTH2_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
-      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+      SECURITY_OAUTH2_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: rabbit
@@ -263,8 +263,8 @@ services:
     container_name: ${CONTAINER_PREFIX:-}gateway_service
     restart: unless-stopped
     environment:
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:7080/auth/realms/portfolio/protocol/openid-connect/certs
-      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
       GATEWAY_CATALOG_URI: http://catalog-service:8081
       GATEWAY_USERS_URI: http://users-service:8082
       GATEWAY_ORDERS_URI: http://orders-service:8084
