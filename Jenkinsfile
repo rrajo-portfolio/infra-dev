@@ -33,6 +33,7 @@ pipeline {
         MVN_TEST_CMD   = './mvnw -B test'
         SONAR_CMD      = './mvnw -B sonar:sonar'
         IMAGE_NAMESPACE = 'rrajo-portfolio'
+        MAVEN_OPTS = '-Xmx1024m -XX:TieredStopAtLevel=1'
     }
     stages {
         stage('Checkout infra-dev') {
