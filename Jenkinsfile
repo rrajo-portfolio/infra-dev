@@ -264,6 +264,7 @@ pipeline {
                     ]) {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
+                            sh "docker rm -f ci-keycloak ci-keycloak_db || true"
                             sh "docker volume rm ${volumeNamespace}_kafka-data || true"
                             sh "docker compose -f ${composeFile} up -d --build"
                             sh "./scripts/wait-for-service.sh ${composeFile} kafka 30 kafka-topics --bootstrap-server localhost:9092 --list"
@@ -349,5 +350,4 @@ pipeline {
         }
     }
 }
-
 
