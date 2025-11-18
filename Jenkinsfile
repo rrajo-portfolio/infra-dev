@@ -280,8 +280,8 @@ pipeline {
                             sh """
                                 ATTEMPTS=0
                                 until docker compose -f ${composeFile} exec -T gateway_service curl -sf http://localhost:8080/actuator/health >/dev/null 2>&1; do
-                                    ATTEMPTS=$((ATTEMPTS+1))
-                                    if [ $ATTEMPTS -ge 30 ]; then
+                                    ATTEMPTS=\$((ATTEMPTS+1))
+                                    if [ \$ATTEMPTS -ge 30 ]; then
                                         echo "gateway_service did not become healthy in time"
                                         exit 1
                                     fi
@@ -367,5 +367,6 @@ pipeline {
         }
     }
 }
+
 
 
