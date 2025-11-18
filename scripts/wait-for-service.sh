@@ -6,9 +6,10 @@ SERVICE="$2"
 MAX_ATTEMPTS="$3"
 shift 3
 CMD=("$@")
+HEALTH_CMD=("docker" "compose" "-f" "${COMPOSE_FILE}" "exec" "-T" "${SERVICE}" "${CMD[@]}")
 
 attempts=0
-until docker compose -f "${COMPOSE_FILE}" exec -T "${SERVICE}" "${CMD[@]}" >/dev/null 2>&1; do
+until "${HEALTH_CMD[@]}" >/dev/null 2>&1; do
   attempts=$((attempts+1))
   if [ "${attempts}" -ge "${MAX_ATTEMPTS}" ]; then
     echo "${SERVICE} did not become healthy in time"
