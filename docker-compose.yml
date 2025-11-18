@@ -174,6 +174,7 @@ services:
       KC_DB_PASSWORD: keycloak
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/portfolio-realm.json
     command: ["start-dev", "--http-relative-path=/auth"]
     ports:
       - "${KEYCLOAK_HTTP_PORT:-7080}:8080"
@@ -186,6 +187,8 @@ services:
       retries: 20
     networks:
       - portfolio-net
+    volumes:
+      - ./keycloak/realm-export:/opt/keycloak/data/import
 
   catalog-service:
     build:
