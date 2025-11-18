@@ -25,6 +25,7 @@ pipeline {
         GITHUB_CREDS_ID = 'github-pat'
         SONAR_CREDENTIALS_ID = 'jenkins-sonar'
         SONAR_HOST_URL = 'http://host.docker.internal:9000'
+        SONAR_SERVER = 'sonarqube'
         CATALOG_REPO   = 'https://github.com/rrajo-portfolio/catalog-service.git'
         USERS_REPO     = 'https://github.com/rrajo-portfolio/users-service.git'
         ORDERS_REPO    = 'https://github.com/rrajo-portfolio/orders-service.git'
@@ -149,7 +150,8 @@ pipeline {
                         error 'SONAR_HOST_URL is not configured. Please set the SonarQube server URL.'
                     }
                     withCredentials([string(credentialsId: env.SONAR_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
-                        parallel(
+                        withSonarQubeEnv(env.SONAR_SERVER) {
+                            parallel(
                             'catalog-service sonar': {
                                 dir('catalog-service') {
                                     sh 'chmod +x mvnw'
@@ -210,7 +212,8 @@ pipeline {
                                     """
                                 }
                             }
-                        )
+                            )
+                        }
                     }
                 }
             }
