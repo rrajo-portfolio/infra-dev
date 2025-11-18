@@ -1,0 +1,74 @@
+{{- if .Values.mysql.enabled }}
+{{- $root := . }}
+{{- range $db := .Values.mysql.databases }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-{{ $db.name }}
+  labels:
+    app: mysql-{{ $db.name }}
+spec:
+  ports:
+    - port: 3306
+      name: mysql
+  selector:
+    app: mysql-{{ $db.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-{{ $db.name }}
+  labels:
+    app: mysql-{{ $db.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-{{ $db.name }}
+  template:
+    metadata:
+      labels:
+        app: mysql-{{ $db.name }}
+    spec:
+      containers:
+        - name: mysql
+          image: {{ $root.Values.mysql.image }}
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: {{ $root.Values.mysql.rootPassword | quote }}
+            - name: MYSQL_DATABASE
+              value: {{ $db.database | quote }}
+            - name: MYSQL_USER
+              value: {{ $db.username | quote }}
+            - name: MYSQL_PASSWORD
+              value: {{ $db.password | quote }}
+          resources: {}
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-data
+{{- if $root.Values.mysql.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: mysql-{{ $db.name }}-pvc
+{{- else }}
+          emptyDir: {}
+{{- end }}
+{{- if $root.Values.mysql.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-{{ $db.name }}-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $root.Values.mysql.persistence.size | default "5Gi" }}
+{{- end }}
+{{- end }}
+{{- end }}

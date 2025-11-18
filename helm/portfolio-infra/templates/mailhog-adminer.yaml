@@ -1,0 +1,129 @@
+{{- if .Values.mailhog.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailhog
+  labels:
+    app: mailhog
+spec:
+  ports:
+    - port: {{ .Values.mailhog.httpPort }}
+      targetPort: 8025
+      name: http
+    - port: {{ .Values.mailhog.smtpPort }}
+      targetPort: 1025
+      name: smtp
+  selector:
+    app: mailhog
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailhog
+  labels:
+    app: mailhog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailhog
+  template:
+    metadata:
+      labels:
+        app: mailhog
+    spec:
+      containers:
+        - name: mailhog
+          image: {{ .Values.mailhog.image }}
+          ports:
+            - containerPort: 8025
+            - containerPort: 1025
+{{- end }}
+
+{{- if .Values.adminer.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adminer
+  labels:
+    app: adminer
+spec:
+  ports:
+    - port: {{ .Values.adminer.service.port }}
+      targetPort: 8080
+      name: http
+  selector:
+    app: adminer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adminer
+  labels:
+    app: adminer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adminer
+  template:
+    metadata:
+      labels:
+        app: adminer
+    spec:
+      containers:
+        - name: adminer
+          image: {{ .Values.adminer.image }}
+          ports:
+            - containerPort: 8080
+{{- end }}
+
+{{- if .Values.rabbitmq.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  ports:
+    - port: {{ .Values.rabbitmq.service.amqpPort }}
+      targetPort: 5672
+      name: amqp
+    - port: {{ .Values.rabbitmq.service.uiPort }}
+      targetPort: 15672
+      name: http
+  selector:
+    app: rabbitmq
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: {{ .Values.rabbitmq.image }}
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: {{ .Values.rabbitmq.user | quote }}
+            - name: RABBITMQ_DEFAULT_PASS
+              value: {{ .Values.rabbitmq.password | quote }}
+{{- end }}

@@ -1,0 +1,15 @@
+catalog-service:
+  image:
+    repository: catalog-service
+    tag: local
+  env:
+    SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    CATALOG_EVENTS_TOPIC: catalog-product-events
+users-service:
+  image:
+    repository: users-service
+    tag: local
+orders-service:
+  image:
+    repository: orders-service
+    tag: local

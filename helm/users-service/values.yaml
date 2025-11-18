@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  repository: users-service
+  tag: "0.0.1"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env:
+  SPRING_PROFILES_ACTIVE: k8s
+  SPRING_DATASOURCE_URL: jdbc:mysql://users-mysql:3306/usersdb
+  SPRING_DATASOURCE_USERNAME: users_user
+  SPRING_DATASOURCE_PASSWORD: users_pass
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/portfolio

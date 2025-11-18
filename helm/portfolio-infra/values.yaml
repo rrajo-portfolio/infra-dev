@@ -1,0 +1,106 @@
+mysql:
+  enabled: true
+  image: mysql:8.0
+  rootPassword: root
+  databases:
+    - name: catalog
+      database: catalogdb
+      username: catalog_user
+      password: catalog_pass
+    - name: users
+      database: usersdb
+      username: users_user
+      password: users_pass
+    - name: orders
+      database: ordersdb
+      username: orders_user
+      password: orders_pass
+  persistence:
+    enabled: false
+    size: 5Gi
+
+postgres:
+  enabled: true
+  image: postgres:15
+  database: keycloak
+  username: keycloak
+  password: keycloak
+  persistence:
+    enabled: false
+    size: 5Gi
+
+keycloak:
+  enabled: true
+  image: quay.io/keycloak/keycloak:24.0
+  adminUser: admin
+  adminPassword: admin
+  service:
+    port: 8080
+
+zookeeper:
+  enabled: true
+  image: confluentinc/cp-zookeeper:7.6.0
+  clientPort: 2181
+
+kafka:
+  enabled: true
+  image: confluentinc/cp-kafka:7.6.0
+  service:
+    port: 9092
+
+elasticsearch:
+  enabled: true
+  image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+  service:
+    port: 9200
+
+kibana:
+  enabled: true
+  image: docker.elastic.co/kibana/kibana:8.13.4
+  service:
+    port: 5601
+
+mailhog:
+  enabled: true
+  image: mailhog/mailhog:latest
+  httpPort: 8025
+  smtpPort: 1025
+
+adminer:
+  enabled: true
+  image: adminer:latest
+  service:
+    port: 8080
+
+rabbitmq:
+  enabled: true
+  image: rabbitmq:3.13-management
+  user: rabbit
+  password: rabbit
+  service:
+    amqpPort: 5672
+    uiPort: 15672
+
+prometheus:
+  enabled: true
+  image: prom/prometheus:v2.55.0
+  service:
+    port: 9090
+  scrapeConfig:
+    additionalScrapeConfigs: []
+  persistence:
+    enabled: false
+    size: 5Gi
+
+grafana:
+  enabled: true
+  image: grafana/grafana:11.1.0
+  adminUser: admin
+  adminPassword: admin
+  service:
+    port: 3000
+  datasources:
+    prometheusUrl: http://prometheus:9090
+  persistence:
+    enabled: false
+    size: 5Gi

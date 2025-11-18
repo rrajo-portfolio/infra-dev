@@ -1,0 +1,20 @@
+catalog-service:
+  image:
+    repository: ghcr.io/rrajo-portfolio/catalog-service
+    tag: latest
+users-service:
+  image:
+    repository: ghcr.io/rrajo-portfolio/users-service
+    tag: latest
+orders-service:
+  image:
+    repository: ghcr.io/rrajo-portfolio/orders-service
+    tag: latest
+gateway-service:
+  image:
+    repository: ghcr.io/rrajo-portfolio/gateway-service
+    tag: latest
+notification-service:
+  image:
+    repository: ghcr.io/rrajo-portfolio/notification-service
+    tag: latest

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: gateway-service
+version: 0.1.0
+appVersion: "0.0.1"
+description: Spring Cloud Gateway for the portfolio platform

@@ -1,0 +1,109 @@
+{
+  "id": null,
+  "uid": "portfolio-overview",
+  "title": "Portfolio Overview",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Catalog Requests",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"catalog-service\"}[5m]))",
+          "legendFormat": "Requests/s"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Users Requests",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"users-service\"}[5m]))",
+          "legendFormat": "Requests/s"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Orders Requests",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"orders-service\"}[5m]))",
+          "legendFormat": "Requests/s"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP Error Rate",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) by (job)",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Kafka Events per Second",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(catalog_product_events_total[5m]))",
+          "legendFormat": "catalog-product-events"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 }
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Memory Usage",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(jvm_memory_used_bytes{job=~\"catalog-service|users-service|orders-service\",area=\"heap\"}) by (job)",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 }
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Threads",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(jvm_threads_live_threads{job=~\"catalog-service|users-service|orders-service\"}) by (job)",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "type": "datasource",
+        "name": "DS_PROMETHEUS",
+        "query": "prometheus",
+        "refresh": 1
+      }
+    ]
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  }
+}

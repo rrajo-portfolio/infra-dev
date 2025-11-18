@@ -1,0 +1,18 @@
+replicaCount: 1
+
+image:
+  repository: gateway-service
+  tag: "0.0.1"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env:
+  SPRING_PROFILES_ACTIVE: k8s
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
+  SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
+  GATEWAY_CATALOG_URI: http://catalog-service:8080
+  GATEWAY_USERS_URI: http://users-service:8080
+  GATEWAY_ORDERS_URI: http://orders-service:8080

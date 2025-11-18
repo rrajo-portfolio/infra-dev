@@ -1,0 +1,6 @@
+apiVersion: v2
+name: users-service
+version: 0.1.0
+appVersion: "0.0.1"
+description: Users microservice chart for the portfolio platform
+

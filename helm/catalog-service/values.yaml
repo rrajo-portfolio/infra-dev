@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: catalog-service
+  tag: "0.0.1"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env:
+  SPRING_PROFILES_ACTIVE: k8s
+  SPRING_DATASOURCE_URL: jdbc:mysql://catalog-mysql:3306/catalogdb
+  SPRING_DATASOURCE_USERNAME: catalog_user
+  SPRING_DATASOURCE_PASSWORD: catalog_pass
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/portfolio
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  CATALOG_EVENTS_TOPIC: catalog-product-events

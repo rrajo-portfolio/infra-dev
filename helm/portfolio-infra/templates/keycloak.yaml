@@ -1,0 +1,118 @@
+{{- if and .Values.postgres.enabled .Values.keycloak.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-db
+  labels:
+    app: keycloak-db
+spec:
+  ports:
+    - port: 5432
+      name: postgres
+  selector:
+    app: keycloak-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-db
+  labels:
+    app: keycloak-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak-db
+  template:
+    metadata:
+      labels:
+        app: keycloak-db
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.database | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.username | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgres.password | quote }}
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+{{- if .Values.postgres.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: keycloak-db-pvc
+{{- else }}
+          emptyDir: {}
+{{- end }}
+{{- if .Values.postgres.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: keycloak-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistence.size | default "5Gi" }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  ports:
+    - port: {{ .Values.keycloak.service.port }}
+      targetPort: 8080
+      name: http
+  selector:
+    app: keycloak
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: {{ .Values.keycloak.image }}
+          args: ["start-dev", "--http-relative-path=/auth"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              value: jdbc:postgresql://keycloak-db:5432/{{ .Values.postgres.database }}
+            - name: KC_DB_USERNAME
+              value: {{ .Values.postgres.username | quote }}
+            - name: KC_DB_PASSWORD
+              value: {{ .Values.postgres.password | quote }}
+            - name: KEYCLOAK_ADMIN
+              value: {{ .Values.keycloak.adminUser | quote }}
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              value: {{ .Values.keycloak.adminPassword | quote }}
+{{- end }}

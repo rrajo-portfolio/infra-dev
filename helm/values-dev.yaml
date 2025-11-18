@@ -1,0 +1,20 @@
+catalog-service:
+  image:
+    repository: rrajo-portfolio/catalog-service
+    tag: latest
+users-service:
+  image:
+    repository: rrajo-portfolio/users-service
+    tag: latest
+orders-service:
+  image:
+    repository: rrajo-portfolio/orders-service
+    tag: latest
+gateway-service:
+  image:
+    repository: rrajo-portfolio/gateway-service
+    tag: latest
+notification-service:
+  image:
+    repository: rrajo-portfolio/notification-service
+    tag: latest

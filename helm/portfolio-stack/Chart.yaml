@@ -1,0 +1,22 @@
+apiVersion: v2
+name: portfolio-stack
+description: Aggregated chart deploying portfolio microservices via subcharts.
+type: application
+version: 0.1.0
+appVersion: "0.0.1"
+dependencies:
+  - name: catalog-service
+    version: 0.1.0
+    repository: file://../catalog-service
+  - name: users-service
+    version: 0.1.0
+    repository: file://../users-service
+  - name: orders-service
+    version: 0.1.0
+    repository: file://../orders-service
+  - name: gateway-service
+    version: 0.1.0
+    repository: file://../gateway-service
+  - name: notification-service
+    version: 0.1.0
+    repository: file://../notification-service

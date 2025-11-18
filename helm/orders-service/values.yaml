@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: orders-service
+  tag: "0.0.1"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env:
+  SPRING_PROFILES_ACTIVE: k8s
+  SPRING_DATASOURCE_URL: jdbc:mysql://orders-mysql:3306/ordersdb
+  SPRING_DATASOURCE_USERNAME: orders_user
+  SPRING_DATASOURCE_PASSWORD: orders_pass
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/portfolio
+  SERVICES_USERS_BASE_URL: http://users-service:8080/api
+  SERVICES_CATALOG_BASE_URL: http://catalog-service:8080/api
