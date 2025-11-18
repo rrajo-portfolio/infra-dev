@@ -278,6 +278,16 @@ pipeline {
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --describe --topic catalog-product-events"
                             sh """
+                                ATTEMPTS=0
+                                until docker compose -f ${composeFile} exec -T gateway_service curl -sf http://localhost:8080/actuator/health >/dev/null 2>&1; do
+                                    ATTEMPTS=$((ATTEMPTS+1))
+                                    if [ $ATTEMPTS -ge 30 ]; then
+                                        echo "gateway_service did not become healthy in time"
+                                        exit 1
+                                    fi
+                                    echo "gateway_service not ready yet, retrying..."
+                                    sleep 5
+                                done
                                 docker compose -f ${composeFile} exec -T gateway_service curl -sf http://localhost:8080/actuator/health
                                 docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health
                             """
