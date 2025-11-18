@@ -264,9 +264,9 @@ pipeline {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                             sh "docker compose -f ${composeFile} up -d --build"
-                            sh "./scripts/wait-for-service.sh ${composeFile} kafka 30 kafka-topics --bootstrap-server kafka:19094 --list"
-                            sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:19094 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
-                            sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:19094 --describe --topic catalog-product-events"
+                            sh "./scripts/wait-for-service.sh ${composeFile} kafka 30 kafka-topics --bootstrap-server localhost:9092 --list"
+                            sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
+                            sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --describe --topic catalog-product-events"
                             sh "./scripts/wait-for-service.sh ${composeFile} keycloak 30 curl -sf http://localhost:8080/auth/realms/portfolio/.well-known/openid-configuration"
                             sh "./scripts/wait-for-service.sh ${composeFile} gateway_service 40 curl -sf http://localhost:8080/actuator/health"
                             sh "docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health"
