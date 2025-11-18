@@ -235,12 +235,13 @@ pipeline {
             steps {
                 script {
                     def composeFile = "${env.WORKSPACE}/docker-compose.yml"
+                    def volumeNamespace = "ci"
                     sh 'chmod +x scripts/wait-for-service.sh'
                     withEnv([
                         "SERVICES_ROOT=.",
                         "COMPOSE_PROJECT_NAME=portfolio",
                         "CONTAINER_PREFIX=ci-",
-                        "VOLUME_NAMESPACE=ci",
+                        "VOLUME_NAMESPACE=${volumeNamespace}",
                         "CATALOG_DB_PORT=13307",
                         "USERS_DB_PORT=13308",
                         "ORDERS_DB_PORT=13309",
@@ -263,6 +264,7 @@ pipeline {
                     ]) {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
+                            sh "docker volume rm ${volumeNamespace}_kafka-data || true"
                             sh "docker compose -f ${composeFile} up -d --build"
                             sh "./scripts/wait-for-service.sh ${composeFile} kafka 30 kafka-topics --bootstrap-server localhost:9092 --list"
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
