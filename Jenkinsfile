@@ -23,6 +23,8 @@ pipeline {
     }
     environment {
         GITHUB_CREDS_ID = 'github-pat'
+        SONAR_CREDENTIALS_ID = 'jenkins-sonar'
+        SONAR_HOST_URL = 'http://host.docker.internal:9000'
         CATALOG_REPO   = 'https://github.com/rrajo-portfolio/catalog-service.git'
         USERS_REPO     = 'https://github.com/rrajo-portfolio/users-service.git'
         ORDERS_REPO    = 'https://github.com/rrajo-portfolio/orders-service.git'
@@ -139,78 +141,76 @@ pipeline {
             }
             steps {
                 script {
-                    parallel(
-                        'catalog-service sonar': {
-                            dir('catalog-service') {
-                                sh 'chmod +x mvnw'
-                                withSonarQubeEnv('sonarqube') {
+                    if (!env.SONAR_CREDENTIALS_ID?.trim()) {
+                        error 'SONAR_CREDENTIALS_ID is not configured. Please set a Jenkins secret text credential id.'
+                    }
+                    if (!env.SONAR_HOST_URL?.trim()) {
+                        error 'SONAR_HOST_URL is not configured. Please set the SonarQube server URL.'
+                    }
+                    withCredentials([string(credentialsId: env.SONAR_CREDENTIALS_ID, variable: 'SONAR_TOKEN')]) {
+                        parallel(
+                            'catalog-service sonar': {
+                                dir('catalog-service') {
+                                    sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \\
-                                          -Dsonar.projectKey=catalog-service \\
-                                          -Dsonar.projectName=catalog-service \\
-                                          -Dsonar.host.url=$SONAR_HOST_URL \\
-                                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=catalog-service \
+                                          -Dsonar.projectName=catalog-service \
+                                          -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=$SONAR_TOKEN
+                                    """
+                                }
+                            },
+                            'users-service sonar': {
+                                dir('users-service') {
+                                    sh 'chmod +x mvnw'
+                                    sh """
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=users-service \
+                                          -Dsonar.projectName=users-service \
+                                          -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=$SONAR_TOKEN
+                                    """
+                                }
+                            },
+                            'orders-service sonar': {
+                                dir('orders-service') {
+                                    sh 'chmod +x mvnw'
+                                    sh """
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=orders-service \
+                                          -Dsonar.projectName=orders-service \
+                                          -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=$SONAR_TOKEN
+                                    """
+                                }
+                            },
+                            'gateway-service sonar': {
+                                dir('gateway-service') {
+                                    sh 'chmod +x mvnw'
+                                    sh """
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=gateway-service \
+                                          -Dsonar.projectName=gateway-service \
+                                          -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=$SONAR_TOKEN
+                                    """
+                                }
+                            },
+                            'notification-service sonar': {
+                                dir('notification-service') {
+                                    sh 'chmod +x mvnw'
+                                    sh """
+                                        ./mvnw -B sonar:sonar \
+                                          -Dsonar.projectKey=notification-service \
+                                          -Dsonar.projectName=notification-service \
+                                          -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=$SONAR_TOKEN
                                     """
                                 }
                             }
-                        },
-                        'users-service sonar': {
-                            dir('users-service') {
-                                sh 'chmod +x mvnw'
-                                withSonarQubeEnv('sonarqube') {
-                                    sh """
-                                        ./mvnw -B sonar:sonar \\
-                                          -Dsonar.projectKey=users-service \\
-                                          -Dsonar.projectName=users-service \\
-                                          -Dsonar.host.url=$SONAR_HOST_URL \\
-                                          -Dsonar.login=$SONAR_AUTH_TOKEN
-                                    """
-                                }
-                            }
-                        },
-                        'orders-service sonar': {
-                            dir('orders-service') {
-                                sh 'chmod +x mvnw'
-                                withSonarQubeEnv('sonarqube') {
-                                    sh """
-                                        ./mvnw -B sonar:sonar \\
-                                          -Dsonar.projectKey=orders-service \\
-                                          -Dsonar.projectName=orders-service \\
-                                          -Dsonar.host.url=$SONAR_HOST_URL \\
-                                          -Dsonar.login=$SONAR_AUTH_TOKEN
-                                    """
-                                }
-                            }
-                        },
-                        'gateway-service sonar': {
-                            dir('gateway-service') {
-                                sh 'chmod +x mvnw'
-                                withSonarQubeEnv('sonarqube') {
-                                    sh """
-                                        ./mvnw -B sonar:sonar \\
-                                          -Dsonar.projectKey=gateway-service \\
-                                          -Dsonar.projectName=gateway-service \\
-                                          -Dsonar.host.url=$SONAR_HOST_URL \\
-                                          -Dsonar.login=$SONAR_AUTH_TOKEN
-                                    """
-                                }
-                            }
-                        },
-                        'notification-service sonar': {
-                            dir('notification-service') {
-                                sh 'chmod +x mvnw'
-                                withSonarQubeEnv('sonarqube') {
-                                    sh """
-                                        ./mvnw -B sonar:sonar \\
-                                          -Dsonar.projectKey=notification-service \\
-                                          -Dsonar.projectName=notification-service \\
-                                          -Dsonar.host.url=$SONAR_HOST_URL \\
-                                          -Dsonar.login=$SONAR_AUTH_TOKEN
-                                    """
-                                }
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
