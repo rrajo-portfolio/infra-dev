@@ -278,29 +278,32 @@ pipeline {
                             sh "docker compose -f \\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
                             sh "docker compose -f \\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --describe --topic catalog-product-events"
                             sh """
-                                ATTEMPTS=0
-                                until docker compose -f \\${composeFile} exec -T keycloak curl -sf http://localhost:8080/auth/realms/portfolio/.well-known/openid-configuration >/dev/null 2>&1; do
-                                    ATTEMPTS=\\\\$((ATTEMPTS+1))
-                                    if [ \\\\$ATTEMPTS -ge 30 ]; then
-                                        echo "keycloak did not become healthy in time"
-                                        exit 1
-                                    fi
-                                    echo "keycloak not ready yet, retrying..."
-                                    sleep 5
-                                done
+                                cat <<'EOF' > wait-for-service.sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-                                ATTEMPTS=0
-                                until docker compose -f \\${composeFile} exec -T gateway_service curl -sf http://localhost:8080/actuator/health >/dev/null 2>&1; do
-                                    ATTEMPTS=\\\\$((ATTEMPTS+1))
-                                    if [ \\\\$ATTEMPTS -ge 40 ]; then
-                                        echo "gateway_service did not become healthy in time"
-                                        exit 1
-                                    fi
-                                    echo "gateway_service not ready yet, retrying..."
-                                    sleep 5
-                                done
-                                docker compose -f \\${composeFile} exec -T gateway_service curl -sf http://localhost:8080/actuator/health
-                                docker compose -f \\${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health
+COMPOSE_FILE="$1"
+SERVICE="$2"
+MAX_ATTEMPTS="$3"
+shift 3
+CMD=("\$@")
+
+attempts=0
+until docker compose -f "\${COMPOSE_FILE}" exec -T "\${SERVICE}" "\${CMD[@]}" >/dev/null 2>&1; do
+  attempts=\$((attempts+1))
+  if [ "\${attempts}" -ge "\${MAX_ATTEMPTS}" ]; then
+    echo "\${SERVICE} did not become healthy in time"
+    exit 1
+  fi
+  echo "\${SERVICE} not ready yet, retrying..."
+  sleep 5
+done
+EOF
+                                chmod +x wait-for-service.sh
+
+                                ./wait-for-service.sh ${composeFile} keycloak 30 curl -sf http://localhost:8080/auth/realms/portfolio/.well-known/openid-configuration
+                                ./wait-for-service.sh ${composeFile} gateway_service 40 curl -sf http://localhost:8080/actuator/health
+                                docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health
                             """
                         } finally {
                             sh "docker compose -f \\${composeFile} down --remove-orphans || true"
