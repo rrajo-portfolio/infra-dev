@@ -1,21 +1,29 @@
 ﻿#!/usr/bin/env bash
 set -euo pipefail
 
-COMPOSE_FILE="$1"
-SERVICE="$2"
-MAX_ATTEMPTS="$3"
+compose_file="$1"
+service="$2"
+max_attempts="$3"
 shift 3
-CMD=("$@")
-HEALTH_CMD=("docker" "compose" "-f" "${COMPOSE_FILE}" "exec" "-T" "${SERVICE}" "${CMD[@]}")
+cmd=("$@")
+health_cmd=("docker" "compose" "-f" "$compose_file" "exec" "-T" "$service" "${cmd[@]}")
 
-attempts=0
-until "${HEALTH_CMD[@]}" >/dev/null 2>&1; do
-  attempts=$((attempts+1))
-  if [ "${attempts}" -ge "${MAX_ATTEMPTS}" ]; then
-    echo "${SERVICE} did not become healthy in time"
-    exit 1
-  fi
-  echo "${SERVICE} not ready yet, retrying..."
-  sleep 5
-done
-
+if [ "$max_attempts" -eq "0" ]; then
+  attempts=0
+  until "${health_cmd[@]}" >/dev/null 2>&1; do
+    attempts=$((attempts+1))
+    echo "$service not ready yet, retrying (attempt $attempts)..."
+    sleep 5
+  done
+else
+  attempts=0
+  until "${health_cmd[@]}" >/dev/null 2>&1; do
+    attempts=$((attempts+1))
+    if [ "$attempts" -ge "$max_attempts" ]; then
+      echo "$service did not become healthy in time"
+      exit 1
+    fi
+    echo "$service not ready yet, retrying..."
+    sleep 5
+  done
+fi
