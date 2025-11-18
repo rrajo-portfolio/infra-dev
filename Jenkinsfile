@@ -258,7 +258,7 @@ pipeline {
                         "NGINX_BUILD_CONTEXT=${env.WORKSPACE}/nginx"
                     ]) {
                         try {
-                            sh "docker compose -f ${composeFile} down --volumes --remove-orphans || true"
+                            sh "docker compose -f ${composeFile} down --remove-orphans || true"
                             sh "docker compose -f ${composeFile} up -d --build"
                             sh """
                                 ATTEMPTS=0
