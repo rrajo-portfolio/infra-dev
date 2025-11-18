@@ -254,6 +254,7 @@ pipeline {
                         "KEYCLOAK_HTTP_PORT=17080",
                         "NGINX_HTTP_PORT=18080",
                         "GATEWAY_HTTP_PORT=18085",
+                        "NOTIFICATION_HTTP_PORT=18086",
                         "SONAR_HTTP_PORT=19000",
                         "JENKINS_HTTP_PORT=18090",
                         "JENKINS_AGENT_PORT=25000",
@@ -273,7 +274,7 @@ pipeline {
                             sh "./scripts/wait-for-service.sh ${composeFile} keycloak-db 30 pg_isready -h localhost -U keycloak"
                             sh "./scripts/wait-for-service.sh ${composeFile} host 0 curl -sf http://host.docker.internal:$KEYCLOAK_HTTP_PORT/auth/realms/portfolio/.well-known/openid-configuration"
                             sh "./scripts/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$GATEWAY_HTTP_PORT/actuator/health"
-                            sh "./scripts/wait-for-service.sh ${composeFile} notification-service 40 curl -sf http://localhost:8080/actuator/health"
+                            sh "./scripts/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$NOTIFICATION_HTTP_PORT/actuator/health"
                         } finally {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                         }

@@ -303,6 +303,8 @@ services:
     depends_on:
       - rabbitmq
       - mailhog
+    ports:
+      - "${NOTIFICATION_HTTP_PORT:-8086}:8080"
     networks:
       - portfolio-net
 
