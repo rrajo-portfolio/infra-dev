@@ -234,7 +234,8 @@ pipeline {
             }
             steps {
                 script {
-                    def composeFile = "\\${env.WORKSPACE}/docker-compose.yml"
+                    def composeFile = "${env.WORKSPACE}/docker-compose.yml"
+                    sh 'chmod +x scripts/wait-for-service.sh'
                     withEnv([
                         "SERVICES_ROOT=.",
                         "COMPOSE_PROJECT_NAME=portfolio",
@@ -258,55 +259,19 @@ pipeline {
                         "ADMINER_HTTP_PORT=18088",
                         "RABBITMQ_AMQP_PORT=25672",
                         "RABBITMQ_HTTP_PORT=35672",
-                        "NGINX_BUILD_CONTEXT=\\${env.WORKSPACE}/nginx"
+                        "NGINX_BUILD_CONTEXT=${env.WORKSPACE}/nginx"
                     ]) {
                         try {
-                            sh "docker compose -f \\${composeFile} down --remove-orphans || true"
-                            sh "docker compose -f \\${composeFile} up -d --build"
-                            sh """
-                                ATTEMPTS=0
-                                until docker compose -f \\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --list >/dev/null 2>&1; do
-                                    ATTEMPTS=\\\$((ATTEMPTS+1))
-                                    if [ \\\$ATTEMPTS -ge 30 ]; then
-                                        echo "Kafka broker did not become ready in time"
-                                        exit 1
-                                    fi
-                                    echo "Kafka not ready yet, retrying..."
-                                    sleep 5
-                                done
-                            """
-                            sh "docker compose -f \\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
-                            sh "docker compose -f \\${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --describe --topic catalog-product-events"
-                            sh """
-                                cat <<'EOF' > wait-for-service.sh
-#!/usr/bin/env bash
-set -euo pipefail
-
-COMPOSE_FILE="$1"
-SERVICE="$2"
-MAX_ATTEMPTS="$3"
-shift 3
-CMD=("\$@")
-
-attempts=0
-until docker compose -f "\${COMPOSE_FILE}" exec -T "\${SERVICE}" "\${CMD[@]}" >/dev/null 2>&1; do
-  attempts=\$((attempts+1))
-  if [ "\${attempts}" -ge "\${MAX_ATTEMPTS}" ]; then
-    echo "\${SERVICE} did not become healthy in time"
-    exit 1
-  fi
-  echo "\${SERVICE} not ready yet, retrying..."
-  sleep 5
-done
-EOF
-                                chmod +x wait-for-service.sh
-
-                                ./wait-for-service.sh ${composeFile} keycloak 30 curl -sf http://localhost:8080/auth/realms/portfolio/.well-known/openid-configuration
-                                ./wait-for-service.sh ${composeFile} gateway_service 40 curl -sf http://localhost:8080/actuator/health
-                                docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health
-                            """
+                            sh "docker compose -f ${composeFile} down --remove-orphans || true"
+                            sh "docker compose -f ${composeFile} up -d --build"
+                            sh "./scripts/wait-for-service.sh ${composeFile} kafka 30 kafka-topics --bootstrap-server kafka:9092 --list"
+                            sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
+                            sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server kafka:9092 --describe --topic catalog-product-events"
+                            sh "./scripts/wait-for-service.sh ${composeFile} keycloak 30 curl -sf http://localhost:8080/auth/realms/portfolio/.well-known/openid-configuration"
+                            sh "./scripts/wait-for-service.sh ${composeFile} gateway_service 40 curl -sf http://localhost:8080/actuator/health"
+                            sh "docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health"
                         } finally {
-                            sh "docker compose -f \\${composeFile} down --remove-orphans || true"
+                            sh "docker compose -f ${composeFile} down --remove-orphans || true"
                         }
                     }
                 }
