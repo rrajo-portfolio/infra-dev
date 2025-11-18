@@ -320,27 +320,7 @@ pipeline {
                 expression { return params.RUN_HELM_DEPLOY }
             }
             steps {
-                dir('helm') {
-                    sh """
-                        helm dependency update ./portfolio-stack
-                        helm upgrade --install portfolio-infra ./portfolio-infra
-                        helm upgrade --install catalog-service catalog-service \\
-                          --set image.repository=\\${env.IMAGE_NAMESPACE}/catalog-service \\
-                          --set image.tag=\\${env.BUILD_NUMBER}
-                        helm upgrade --install users-service users-service \\
-                          --set image.repository=\\${env.IMAGE_NAMESPACE}/users-service \\
-                          --set image.tag=\\${env.BUILD_NUMBER}
-                        helm upgrade --install orders-service orders-service \\
-                          --set image.repository=\\${env.IMAGE_NAMESPACE}/orders-service \\
-                          --set image.tag=\\${env.BUILD_NUMBER}
-                        helm upgrade --install gateway-service gateway-service \\
-                          --set image.repository=\\${env.IMAGE_NAMESPACE}/gateway-service \\
-                          --set image.tag=\\${env.BUILD_NUMBER}
-                        helm upgrade --install notification-service notification-service \\
-                          --set image.repository=\\${env.IMAGE_NAMESPACE}/notification-service \\
-                          --set image.tag=\\${env.BUILD_NUMBER}
-                    """
-                }
+                error 'Helm deploy is not supported in this Jenkins environment. Run the helm commands manually from a cluster-aware agent or shell.'
             }
         }
     }
