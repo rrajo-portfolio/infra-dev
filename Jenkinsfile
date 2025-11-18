@@ -271,7 +271,7 @@ pipeline {
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --describe --topic catalog-product-events"
                             sh "./scripts/wait-for-service.sh ${composeFile} keycloak-db 30 pg_isready -h localhost -U keycloak"
-                            sh "./scripts/wait-for-service.sh ${composeFile} host 0 curl -sf http://localhost:$KEYCLOAK_HTTP_PORT/auth/realms/portfolio/.well-known/openid-configuration"
+                            sh "./scripts/wait-for-service.sh ${composeFile} host 0 curl -sf http://host.docker.internal:$KEYCLOAK_HTTP_PORT/auth/realms/portfolio/.well-known/openid-configuration"
                             sh "./scripts/wait-for-service.sh ${composeFile} gateway_service 40 curl -sf http://localhost:8080/actuator/health"
                             sh "docker compose -f ${composeFile} exec -T notification_service curl -sf http://localhost:8080/actuator/health"
                         } finally {
@@ -350,4 +350,3 @@ pipeline {
         }
     }
 }
-
