@@ -175,6 +175,13 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KEYCLOAK_IMPORT: /opt/keycloak/data/import/portfolio-realm.json
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_PORT: ${KEYCLOAK_HTTP_PORT:-7080}
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_SPI_THEME_DEFAULT: portfolio-theme
+      KC_SPI_THEME_CACHE_THEMES: "false"
+      KC_SPI_THEME_CACHE_TEMPLATES: "false"
     command: ["start-dev", "--http-relative-path=/auth"]
     ports:
       - "${KEYCLOAK_HTTP_PORT:-7080}:8080"
@@ -189,6 +196,7 @@ services:
       - portfolio-net
     volumes:
       - ./keycloak/realm-export:/opt/keycloak/data/import
+      - ./keycloak/themes/portfolio-theme:/opt/keycloak/themes/portfolio-theme:ro
 
   catalog-service:
     build:
@@ -200,9 +208,11 @@ services:
       SPRING_DATASOURCE_USERNAME: catalog_user
       SPRING_DATASOURCE_PASSWORD: catalog_pass
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
       SERVICES_USERS_BASE_URL: http://users-service:8082/api
       SECURITY_OAUTH2_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
-      SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       CATALOG_EVENTS_TOPIC: catalog-product-events
     depends_on:
@@ -223,7 +233,7 @@ services:
       SPRING_DATASOURCE_USERNAME: users_user
       SPRING_DATASOURCE_PASSWORD: users_pass
       SECURITY_OAUTH2_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
-      SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
     depends_on:
       - mysql-users
     networks:
@@ -241,12 +251,16 @@ services:
       SERVICES_USERS_BASE_URL: http://users-service:8082/api
       SERVICES_CATALOG_BASE_URL: http://catalog-service:8081/api
       SECURITY_OAUTH2_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
-      SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: rabbit
       SPRING_RABBITMQ_PASSWORD: rabbit
       ORDERS_NOTIFICATION_ENABLED: "true"
+      SERVICE_ACCOUNT_USERNAME: portfolio-admin
+      SERVICE_ACCOUNT_PASSWORD: admin123
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      ORDERS_KAFKA_TOPIC: orders-checkout-events
     depends_on:
       - mysql-orders
       - catalog-service
@@ -275,7 +289,8 @@ services:
     restart: unless-stopped
     environment:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
-      SECURITY_OAUTH2_EXPECTED_ISSUER: http://keycloak:8080/auth/realms/portfolio
+      SECURITY_OAUTH2_EXPECTED_ISSUER: http://localhost:7080/auth/realms/portfolio
+      GATEWAY_KEYCLOAK_INTERNAL_ISSUER: http://keycloak:8080/auth/realms/portfolio
       GATEWAY_CATALOG_URI: http://catalog-service:8081
       GATEWAY_USERS_URI: http://users-service:8082
       GATEWAY_ORDERS_URI: http://orders-service:8084
@@ -305,6 +320,24 @@ services:
       - mailhog
     ports:
       - "${NOTIFICATION_HTTP_PORT:-8086}:8080"
+    networks:
+      - portfolio-net
+
+  frontend-service:
+    build:
+      context: ${SERVICES_ROOT:-..}/frontend-service
+    container_name: ${CONTAINER_PREFIX:-}frontend_service
+    restart: unless-stopped
+    environment:
+      API_URL: ${FRONTEND_API_URL:-http://localhost:${GATEWAY_HTTP_PORT:-8085}}
+      KEYCLOAK_URL: ${FRONTEND_KEYCLOAK_URL:-http://localhost:${KEYCLOAK_HTTP_PORT:-7080}/auth}
+      KEYCLOAK_REALM: portfolio
+      KEYCLOAK_CLIENT_ID: portfolio-frontend
+    ports:
+      - "${FRONTEND_HTTP_PORT:-8087}:80"
+    depends_on:
+      - gateway-service
+      - keycloak
     networks:
       - portfolio-net
 

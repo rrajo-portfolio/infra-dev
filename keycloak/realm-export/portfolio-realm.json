@@ -1,6 +1,53 @@
 {
   "realm": "portfolio",
   "enabled": true,
+  "loginTheme": "portfolio-theme",
+  "accountTheme": "portfolio-theme",
+  "emailTheme": "portfolio-theme",
+  "roles": {
+    "realm": [
+      { "name": "admin" },
+      { "name": "user" },
+      { "name": "portfolio_admin" },
+      { "name": "catalog_admin" },
+      { "name": "catalog_read" },
+      { "name": "orders_read" },
+      { "name": "users_read" },
+      { "name": "orders_write" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "portfolio-api",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "portfolio-api-secret",
+      "serviceAccountsEnabled": true,
+      "redirectUris": ["*"]
+    },
+    {
+      "clientId": "portfolio-frontend",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "redirectUris": [
+        "http://localhost:4200/*",
+        "http://localhost:8087/*",
+        "http://localhost:18081/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200",
+        "http://localhost:8087",
+        "http://localhost:18081"
+      ]
+    }
+  ],
   "users": [
     {
       "username": "portfolio-admin",
@@ -13,27 +60,28 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["portfolio_admin"]
-    }
-  ],
-  "clients": [
+      "realmRoles": [
+        "admin",
+        "portfolio_admin",
+        "catalog_admin",
+        "catalog_read",
+        "orders_read",
+        "users_read",
+        "orders_write"
+      ]
+    },
     {
-      "clientId": "portfolio-api",
+      "username": "portfolio-user",
       "enabled": true,
-      "protocol": "openid-connect",
-      "publicClient": false,
-      "secret": "portfolio-api-secret",
-      "redirectUris": ["*"]
+      "email": "user@portfolio.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user", "catalog_read", "orders_read", "orders_write"]
     }
-  ],
-  "roles": {
-    "realm": [
-      {
-        "name": "portfolio_admin"
-      },
-      {
-        "name": "catalog_admin"
-      }
-    ]
-  }
+  ]
 }

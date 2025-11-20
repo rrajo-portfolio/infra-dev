@@ -1,0 +1,16 @@
+<svg width="160" height="48" viewBox="0 0 160 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Portfolio Platform">
+  <defs>
+    <linearGradient id="portfolio-theme-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <rect width="48" height="48" rx="12" fill="url(#portfolio-theme-gradient)"/>
+    <path d="M16 32L24 16L32 32H16Z" fill="#fff" fill-opacity=".9"/>
+    <circle cx="34" cy="14" r="6" fill="#fff" fill-opacity=".85"/>
+    <text x="60" y="30" fill="#fff" font-size="20" font-family="Inter, Arial, sans-serif" font-weight="600">
+      Portfolio
+    </text>
+  </g>
+</svg>

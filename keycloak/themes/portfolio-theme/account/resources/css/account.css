@@ -1,0 +1,95 @@
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --surface: #0f172a;
+  --text: #0f172a;
+  --muted: #6b7280;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, rgba(37, 99, 235, 0.15), transparent 40%),
+    #f8fafc;
+  color: var(--text);
+}
+
+.navbar-pf-vertical {
+  background: var(--surface);
+  border-right: none;
+}
+
+.navbar-pf-vertical .nav-stacked > li > a {
+  color: #cbd5f5;
+  font-weight: 500;
+  border-radius: 8px;
+  margin: 4px 8px;
+  padding: 10px 16px;
+  transition: background 0.2s ease;
+}
+
+.navbar-pf-vertical .nav-stacked > li > a:hover,
+.navbar-pf-vertical .nav-stacked > li.active > a {
+  background: rgba(59, 130, 246, 0.25);
+  color: #fff;
+}
+
+.card-pf {
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+  padding: 24px;
+}
+
+.btn-primary,
+.pf-c-button.pf-m-primary {
+  border-radius: 9999px;
+  font-weight: 600;
+  padding: 10px 22px;
+  border: none;
+  background-image: linear-gradient(135deg, #6366f1, #2563eb);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.btn-primary:hover,
+.pf-c-button.pf-m-primary:hover {
+  filter: brightness(1.05);
+}
+
+.form-horizontal .control-label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.pf-c-form-control {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 10px 14px;
+  transition: border 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pf-c-form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.nav-tabs > li > a {
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li > a:hover {
+  border: none;
+  border-bottom: 2px solid var(--primary);
+  color: var(--primary);
+  background: transparent;
+}
+
+.kc-info-message {
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--primary-dark);
+}

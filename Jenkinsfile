@@ -31,6 +31,7 @@ pipeline {
         ORDERS_REPO    = 'https://github.com/rrajo-portfolio/orders-service.git'
         GATEWAY_REPO   = 'https://github.com/rrajo-portfolio/gateway-service.git'
         NOTIFICATION_REPO = 'https://github.com/rrajo-portfolio/notification-service.git'
+        FRONTEND_REPO  = 'https://github.com/rrajo-portfolio/frontend-service.git'
         MVN_TEST_CMD   = './mvnw -B test'
         SONAR_CMD      = './mvnw -B sonar:sonar'
         IMAGE_NAMESPACE = 'rrajo-portfolio'
@@ -76,6 +77,13 @@ pipeline {
                     steps {
                         dir('notification-service') {
                             git branch: 'main', credentialsId: env.GITHUB_CREDS_ID, url: env.NOTIFICATION_REPO
+                        }
+                    }
+                }
+                stage('frontend-service repo') {
+                    steps {
+                        dir('frontend-service') {
+                            git branch: 'main', credentialsId: env.GITHUB_CREDS_ID, url: env.FRONTEND_REPO
                         }
                     }
                 }
@@ -134,6 +142,14 @@ pipeline {
                             sh env.MVN_TEST_CMD
                         }
                     }
+                }
+            }
+        }
+        stage('Frontend build') {
+            steps {
+                dir('frontend-service') {
+                    sh 'npm ci'
+                    sh 'npm run build -- --configuration production'
                 }
             }
         }
@@ -258,6 +274,9 @@ pipeline {
                         "SONAR_HTTP_PORT=19000",
                         "JENKINS_HTTP_PORT=18090",
                         "JENKINS_AGENT_PORT=25000",
+                        "FRONTEND_HTTP_PORT=18081",
+                        "FRONTEND_API_URL=http://host.docker.internal:18085",
+                        "FRONTEND_KEYCLOAK_URL=http://host.docker.internal:17080/auth",
                         "ADMINER_HTTP_PORT=18088",
                         "RABBITMQ_AMQP_PORT=25672",
                         "RABBITMQ_HTTP_PORT=35672",
@@ -275,6 +294,7 @@ pipeline {
                             sh "./scripts/wait-for-service.sh ${composeFile} host 0 curl -sf http://host.docker.internal:$KEYCLOAK_HTTP_PORT/auth/realms/portfolio/.well-known/openid-configuration"
                             sh "./scripts/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$GATEWAY_HTTP_PORT/actuator/health"
                             sh "./scripts/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$NOTIFICATION_HTTP_PORT/actuator/health"
+                            sh "./scripts/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$FRONTEND_HTTP_PORT"
                         } finally {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                         }
@@ -309,6 +329,11 @@ pipeline {
                         'notification image': {
                             dir('notification-service') {
                                 sh "docker build -t \\${env.IMAGE_NAMESPACE}/notification-service:\\${env.BUILD_NUMBER} ."
+                            }
+                        },
+                        'frontend image': {
+                            dir('frontend-service') {
+                                sh "docker build -t \\${env.IMAGE_NAMESPACE}/frontend-service:\\${env.BUILD_NUMBER} ."
                             }
                         }
                     )
