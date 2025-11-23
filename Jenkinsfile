@@ -33,7 +33,7 @@ pipeline {
         NOTIFICATION_REPO = 'https://github.com/rrajo-portfolio/notification-service.git'
         FRONTEND_REPO  = 'https://github.com/rrajo-portfolio/frontend-service.git'
         MVN_TEST_CMD   = './mvnw -B test'
-        SONAR_CMD      = './mvnw -B sonar:sonar'
+        SONAR_CMD      = './mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594:sonar'
         IMAGE_NAMESPACE = 'rrajo-portfolio'
         MAVEN_OPTS = '-Xmx1024m -XX:TieredStopAtLevel=1'
     }
