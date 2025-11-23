@@ -172,7 +172,7 @@ pipeline {
                                 dir('catalog-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \
+                                        $SONAR_CMD \
                                           -Dsonar.projectKey=catalog-service \
                                           -Dsonar.projectName=catalog-service \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
@@ -184,7 +184,7 @@ pipeline {
                                 dir('users-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \
+                                        $SONAR_CMD \
                                           -Dsonar.projectKey=users-service \
                                           -Dsonar.projectName=users-service \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
@@ -196,7 +196,7 @@ pipeline {
                                 dir('orders-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \
+                                        $SONAR_CMD \
                                           -Dsonar.projectKey=orders-service \
                                           -Dsonar.projectName=orders-service \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
@@ -208,7 +208,7 @@ pipeline {
                                 dir('gateway-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \
+                                        $SONAR_CMD \
                                           -Dsonar.projectKey=gateway-service \
                                           -Dsonar.projectName=gateway-service \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
@@ -220,7 +220,7 @@ pipeline {
                                 dir('notification-service') {
                                     sh 'chmod +x mvnw'
                                     sh """
-                                        ./mvnw -B sonar:sonar \
+                                        $SONAR_CMD \
                                           -Dsonar.projectKey=notification-service \
                                           -Dsonar.projectName=notification-service \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
@@ -356,3 +356,6 @@ pipeline {
         }
     }
 }
+
+
+
