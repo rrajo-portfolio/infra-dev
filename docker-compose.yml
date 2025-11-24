@@ -7,6 +7,10 @@ services:
         reservations:
           memory: "${MYSQL_CATALOG_MEM:-512m}"
     restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: catalogdb
@@ -27,6 +31,10 @@ services:
         reservations:
           memory: "${MYSQL_USERS_MEM:-512m}"
     restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: usersdb
@@ -47,6 +55,10 @@ services:
         reservations:
           memory: "${MYSQL_ORDERS_MEM:-512m}"
     restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ordersdb
@@ -204,7 +216,7 @@ services:
     container_name: ${CONTAINER_PREFIX:-}catalog_service
     restart: unless-stopped
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-catalog:3306/catalogdb
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-catalog:3306/catalogdb?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false"
       SPRING_DATASOURCE_USERNAME: catalog_user
       SPRING_DATASOURCE_PASSWORD: catalog_pass
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
@@ -229,7 +241,7 @@ services:
     container_name: ${CONTAINER_PREFIX:-}users_service
     restart: unless-stopped
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-users:3306/usersdb
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-users:3306/usersdb?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false"
       SPRING_DATASOURCE_USERNAME: users_user
       SPRING_DATASOURCE_PASSWORD: users_pass
       SECURITY_OAUTH2_JWK_SET_URI: http://keycloak:8080/auth/realms/portfolio/protocol/openid-connect/certs
@@ -245,7 +257,7 @@ services:
     container_name: ${CONTAINER_PREFIX:-}orders_service
     restart: unless-stopped
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-orders:3306/ordersdb
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-orders:3306/ordersdb?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false"
       SPRING_DATASOURCE_USERNAME: orders_user
       SPRING_DATASOURCE_PASSWORD: orders_pass
       SERVICES_USERS_BASE_URL: http://users-service:8082/api
@@ -361,6 +373,43 @@ services:
     networks:
       - portfolio-net
 
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: ${CONTAINER_PREFIX:-}prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "${PROMETHEUS_HTTP_PORT:-9090}:9090"
+    depends_on:
+      - catalog-service
+      - users-service
+      - orders-service
+      - gateway-service
+      - notification-service
+    networks:
+      - portfolio-net
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: ${CONTAINER_PREFIX:-}grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    ports:
+      - "${GRAFANA_HTTP_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - portfolio-net
+
   jenkins:
     build:
       context: ./jenkins
@@ -423,6 +472,10 @@ volumes:
     name: ${VOLUME_NAMESPACE:-infra-dev}_sonarqube-logs
   sonarqube-extensions:
     name: ${VOLUME_NAMESPACE:-infra-dev}_sonarqube-extensions
+  prometheus-data:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_prometheus-data
+  grafana-data:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_grafana-data
 
 networks:
   portfolio-net:

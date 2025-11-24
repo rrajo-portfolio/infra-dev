@@ -88,6 +88,12 @@ prometheus:
     port: 9090
   scrapeConfig:
     additionalScrapeConfigs: []
+  ingress:
+    enabled: true
+    className: traefik
+    host: prometheus.localtest.me
+    path: /
+    annotations: {}
   persistence:
     enabled: false
     size: 5Gi
@@ -101,6 +107,12 @@ grafana:
     port: 3000
   datasources:
     prometheusUrl: http://prometheus:9090
+  ingress:
+    enabled: true
+    className: traefik
+    host: grafana.localtest.me
+    path: /
+    annotations: {}
   persistence:
     enabled: false
     size: 5Gi

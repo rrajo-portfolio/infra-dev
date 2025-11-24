@@ -4,12 +4,14 @@ catalog-service:
     tag: latest
   env:
     SPRING_PROFILES_ACTIVE: k8s
-    SPRING_DATASOURCE_URL: jdbc:mysql://catalog-mysql:3306/catalogdb
+    SPRING_DATASOURCE_URL: jdbc:mysql://mysql-catalog:3306/catalogdb
     SPRING_DATASOURCE_USERNAME: catalog_user
     SPRING_DATASOURCE_PASSWORD: catalog_pass
+    SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/portfolio
     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     CATALOG_EVENTS_TOPIC: catalog-product-events
+    SERVER_PORT: "8080"
 
 users-service:
   image:
@@ -17,10 +19,11 @@ users-service:
     tag: latest
   env:
     SPRING_PROFILES_ACTIVE: k8s
-    SPRING_DATASOURCE_URL: jdbc:mysql://users-mysql:3306/usersdb
+    SPRING_DATASOURCE_URL: jdbc:mysql://mysql-users:3306/usersdb
     SPRING_DATASOURCE_USERNAME: users_user
     SPRING_DATASOURCE_PASSWORD: users_pass
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/portfolio
+    SERVER_PORT: "8080"
 
 orders-service:
   image:
@@ -28,7 +31,7 @@ orders-service:
     tag: latest
   env:
     SPRING_PROFILES_ACTIVE: k8s
-    SPRING_DATASOURCE_URL: jdbc:mysql://orders-mysql:3306/ordersdb
+    SPRING_DATASOURCE_URL: jdbc:mysql://mysql-orders:3306/ordersdb
     SPRING_DATASOURCE_USERNAME: orders_user
     SPRING_DATASOURCE_PASSWORD: orders_pass
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/portfolio
@@ -39,6 +42,7 @@ orders-service:
     SPRING_RABBITMQ_USERNAME: rabbit
     SPRING_RABBITMQ_PASSWORD: rabbit
     ORDERS_NOTIFICATION_ENABLED: "true"
+    SERVER_PORT: "8080"
 gateway-service:
   image:
     repository: rrajo-portfolio/gateway-service
@@ -60,3 +64,4 @@ notification-service:
     SPRING_RABBITMQ_PASSWORD: rabbit
     MAIL_HOST: mailhog
     MAIL_PORT: "1025"
+

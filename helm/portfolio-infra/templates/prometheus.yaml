@@ -13,6 +13,34 @@ spec:
       name: http
   selector:
     app: prometheus
+{{- if .Values.prometheus.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+{{- if .Values.prometheus.ingress.annotations }}
+  annotations:
+{{ toYaml .Values.prometheus.ingress.annotations | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.prometheus.ingress.className }}
+  ingressClassName: {{ .Values.prometheus.ingress.className }}
+{{- end }}
+  rules:
+    - host: {{ .Values.prometheus.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.prometheus.ingress.path | default "/" }}
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus
+                port:
+                  number: {{ .Values.prometheus.service.port }}
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -69,17 +97,17 @@ data:
         static_configs:
           - targets: ['prometheus:9090']
       - job_name: 'catalog-service'
-        metrics_path: /actuator/prometheus
+        metrics_path: /api/actuator/prometheus
         static_configs:
-          - targets: ['catalog-service:8080']
+          - targets: ['portfolio-stack-catalog-service:8080']
       - job_name: 'users-service'
-        metrics_path: /actuator/prometheus
+        metrics_path: /api/actuator/prometheus
         static_configs:
-          - targets: ['users-service:8080']
+          - targets: ['portfolio-stack-users-service:8080']
       - job_name: 'orders-service'
-        metrics_path: /actuator/prometheus
+        metrics_path: /api/actuator/prometheus
         static_configs:
-          - targets: ['orders-service:8080']
+          - targets: ['portfolio-stack-orders-service:8080']
 {{- range .Values.prometheus.scrapeConfig.additionalScrapeConfigs }}
       - {{ . | toYaml | nindent 6 }}
 {{- end }}

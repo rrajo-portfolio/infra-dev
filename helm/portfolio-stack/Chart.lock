@@ -1,0 +1,18 @@
+dependencies:
+- name: catalog-service
+  repository: file://../catalog-service
+  version: 0.1.0
+- name: users-service
+  repository: file://../users-service
+  version: 0.1.0
+- name: orders-service
+  repository: file://../orders-service
+  version: 0.1.0
+- name: gateway-service
+  repository: file://../gateway-service
+  version: 0.1.0
+- name: notification-service
+  repository: file://../notification-service
+  version: 0.1.0
+digest: sha256:4aaf544566d6bdbdd97c67bbfbb381b81e4105b5ed5b4fc7f1e557462d38cf65
+generated: "2025-11-24T11:32:33.389411+01:00"

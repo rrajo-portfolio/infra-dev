@@ -148,7 +148,13 @@ pipeline {
         stage('Frontend build') {
             steps {
                 dir('frontend-service') {
-                    sh 'npm ci'
+                    sh '''
+                        if [ ! -f package-lock.json ]; then
+                            echo "package-lock.json not found. Generating one with npm install --package-lock-only"
+                            npm install --package-lock-only
+                        fi
+                        npm ci
+                    '''
                     sh 'npm run build -- --configuration production'
                 }
             }
