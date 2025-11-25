@@ -2,6 +2,7 @@
   "id": null,
   "uid": "portfolio-overview",
   "title": "Portfolio Overview",
+  "description": "Observabilidad end-to-end para el smoke test de Jenkins y el stack local.",
   "timezone": "browser",
   "schemaVersion": 39,
   "version": 1,
