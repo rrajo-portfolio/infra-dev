@@ -342,7 +342,7 @@ services:
     restart: unless-stopped
     environment:
       API_URL: ${FRONTEND_API_URL:-http://localhost:${GATEWAY_HTTP_PORT:-8085}}
-      KEYCLOAK_URL: ${FRONTEND_KEYCLOAK_URL:-http://localhost:${KEYCLOAK_HTTP_PORT:-7080}/auth}
+      KEYCLOAK_URL: ${FRONTEND_KEYCLOAK_URL:-http://localhost:${GATEWAY_HTTP_PORT:-8085}/auth}
       KEYCLOAK_REALM: portfolio
       KEYCLOAK_CLIENT_ID: portfolio-frontend
     ports:
