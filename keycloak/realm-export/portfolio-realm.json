@@ -25,6 +25,7 @@
     "webAuthnPolicyPasswordlessRequireResidentKey": "not specified"
   },
   "defaultRoles": [
+    "default-roles-portfolio",
     "user",
     "catalog_read",
     "orders_read"
@@ -87,8 +88,50 @@
       {
         "name": "orders_write",
         "description": "Can create and edit orders"
+      },
+      {
+        "name": "offline_access",
+        "description": "${role_offline-access}"
+      },
+      {
+        "name": "uma_authorization",
+        "description": "${role_uma_authorization}"
+      },
+      {
+        "name": "default-roles-portfolio",
+        "description": "${role_default-roles}",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "uma_authorization",
+            "offline_access",
+            "user",
+            "catalog_read",
+            "orders_read"
+          ],
+          "client": {
+            "account": [
+              "manage-account",
+              "view-profile"
+            ]
+          }
+        }
       }
-    ]
+    ],
+    "client": {
+      "account": [
+        {
+          "name": "manage-account",
+          "description": "${role_manage-account}",
+          "composite": false
+        },
+        {
+          "name": "view-profile",
+          "description": "${role_view-profile}",
+          "composite": false
+        }
+      ]
+    }
   },
   "scopeMappings": [
     {
