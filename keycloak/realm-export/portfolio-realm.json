@@ -1,40 +1,132 @@
 {
   "realm": "portfolio",
+  "displayName": "Portfolio Platform",
+  "displayNameHtml": "<div class='kc-logo-text'><span>Portfolio</span> Platform</div>",
   "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "defaultRoles": [
+    "user",
+    "catalog_read",
+    "orders_read"
+  ],
+  "requiredCredentials": [
+    "password"
+  ],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "otpSupportedApplications": [
+    "FreeOTP",
+    "Google Authenticator"
+  ],
+  "passwordPolicy": "length(8) and digits(1) and upperCase(1) and specialChars(1) and notUsername(undefined)",
   "loginTheme": "portfolio-theme",
   "accountTheme": "portfolio-theme",
+  "adminTheme": "keycloak",
   "emailTheme": "portfolio-theme",
+  "eventsEnabled": true,
+  "eventsListeners": [
+    "jboss-logging"
+  ],
+  "enabledEventTypes": [],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
   "roles": {
     "realm": [
-      { "name": "admin" },
-      { "name": "user" },
-      { "name": "portfolio_admin" },
-      { "name": "catalog_admin" },
-      { "name": "catalog_read" },
-      { "name": "orders_read" },
-      { "name": "users_read" },
-      { "name": "orders_write" }
+      {
+        "name": "admin",
+        "description": "Administrator with full access"
+      },
+      {
+        "name": "user",
+        "description": "Standard authenticated user"
+      },
+      {
+        "name": "portfolio_admin",
+        "description": "Portfolio platform superuser"
+      },
+      {
+        "name": "catalog_admin",
+        "description": "Can manage products and inventory"
+      },
+      {
+        "name": "catalog_read",
+        "description": "Can view catalog products"
+      },
+      {
+        "name": "orders_read",
+        "description": "Can view orders"
+      },
+      {
+        "name": "users_read",
+        "description": "Can view public user profiles"
+      },
+      {
+        "name": "orders_write",
+        "description": "Can create and edit orders"
+      }
     ]
   },
+  "scopeMappings": [
+    {
+      "clientScope": "email",
+      "roles": ["user"]
+    }
+  ],
   "clients": [
     {
       "clientId": "portfolio-api",
+      "name": "Portfolio Backend API",
+      "description": "Service account for machine-to-machine communication",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
+      "bearerOnly": false,
       "secret": "portfolio-api-secret",
       "serviceAccountsEnabled": true,
-      "redirectUris": ["*"]
+      "redirectUris": [],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ]
     },
     {
       "clientId": "portfolio-frontend",
+      "name": "Portfolio Angular SPA",
+      "description": "Frontend application with PKCE support",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": true,
       "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
       "attributes": {
-        "pkce.code.challenge.method": "S256"
+        "pkce.code.challenge.method": "S256",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "use.refresh.tokens": "true"
       },
       "redirectUris": [
         "http://localhost:4200/*",
@@ -45,6 +137,13 @@
         "http://localhost:4200",
         "http://localhost:8087",
         "http://localhost:18081"
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
       ]
     }
   ],
@@ -53,10 +152,12 @@
       "username": "portfolio-admin",
       "enabled": true,
       "email": "admin@portfolio.local",
+      "firstName": "Admin",
+      "lastName": "User",
       "credentials": [
         {
           "type": "password",
-          "value": "admin123",
+          "value": "Password123!",
           "temporary": false
         }
       ],
@@ -68,20 +169,30 @@
         "orders_read",
         "users_read",
         "orders_write"
-      ]
+      ],
+      "clientRoles": {
+        "realm-management": ["realm-admin"]
+      }
     },
     {
       "username": "portfolio-user",
       "enabled": true,
       "email": "user@portfolio.local",
+      "firstName": "Portfolio",
+      "lastName": "User",
       "credentials": [
         {
           "type": "password",
-          "value": "user123",
+          "value": "Password123!",
           "temporary": false
         }
       ],
-      "realmRoles": ["user", "catalog_read", "orders_read", "orders_write"]
+      "realmRoles": [
+        "user",
+        "catalog_read",
+        "orders_read",
+        "orders_write"
+      ]
     }
   ]
 }
