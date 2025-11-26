@@ -20,6 +20,10 @@
   "quickLoginCheckMilliSeconds": 1000,
   "maxDeltaTimeSeconds": 43200,
   "failureFactor": 5,
+  "attributes": {
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self' http://localhost:8087 http://localhost:18081; object-src 'none';",
+    "webAuthnPolicyPasswordlessRequireResidentKey": "not specified"
+  },
   "defaultRoles": [
     "user",
     "catalog_read",

@@ -1,6 +1,0 @@
-{
-  "attributes": {
-    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self' http://localhost:8087 http://localhost:18081; object-src 'none';",
-    "webAuthnPolicyPasswordlessRequireResidentKey": "not specified"
-  }
-}
