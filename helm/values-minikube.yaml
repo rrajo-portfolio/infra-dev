@@ -13,3 +13,7 @@ orders-service:
   image:
     repository: orders-service
     tag: local
+frontend-service:
+  image:
+    repository: frontend-service
+    tag: local

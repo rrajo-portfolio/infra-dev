@@ -53,6 +53,11 @@ gateway-service:
     GATEWAY_CATALOG_URI: http://catalog-service:8080
     GATEWAY_USERS_URI: http://users-service:8080
     GATEWAY_ORDERS_URI: http://orders-service:8080
+  ingress:
+    enabled: true
+    className: nginx
+    host: gateway.localtest.me
+    path: /
 notification-service:
   image:
     repository: rrajo-portfolio/notification-service
@@ -64,4 +69,17 @@ notification-service:
     SPRING_RABBITMQ_PASSWORD: rabbit
     MAIL_HOST: mailhog
     MAIL_PORT: "1025"
-
+frontend-service:
+  image:
+    repository: rrajo-portfolio/frontend-service
+    tag: latest
+  env:
+    API_URL: http://gateway.localtest.me:8080
+    KEYCLOAK_URL: http://gateway.localtest.me:8080/auth
+    KEYCLOAK_REALM: portfolio
+    KEYCLOAK_CLIENT_ID: portfolio-frontend
+  ingress:
+    enabled: true
+    className: nginx
+    host: frontend.localtest.me
+    path: /

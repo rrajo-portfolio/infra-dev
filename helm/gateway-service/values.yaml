@@ -16,3 +16,11 @@ env:
   GATEWAY_CATALOG_URI: http://catalog-service:8080
   GATEWAY_USERS_URI: http://users-service:8080
   GATEWAY_ORDERS_URI: http://orders-service:8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: gateway.localtest.me
+  path: /
+  tls: []

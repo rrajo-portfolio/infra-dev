@@ -18,3 +18,7 @@ notification-service:
   image:
     repository: ghcr.io/rrajo-portfolio/notification-service
     tag: latest
+frontend-service:
+  image:
+    repository: ghcr.io/rrajo-portfolio/frontend-service
+    tag: latest

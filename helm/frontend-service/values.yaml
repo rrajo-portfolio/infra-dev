@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: frontend-service
+  tag: "0.0.1"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+env:
+  API_URL: http://gateway.localtest.me:8080
+  KEYCLOAK_URL: http://gateway.localtest.me:8080/auth
+  KEYCLOAK_REALM: portfolio
+  KEYCLOAK_CLIENT_ID: portfolio-frontend
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: frontend.localtest.me
+  path: /
+  tls: []
+
+resources: {}

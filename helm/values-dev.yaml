@@ -18,3 +18,7 @@ notification-service:
   image:
     repository: rrajo-portfolio/notification-service
     tag: latest
+frontend-service:
+  image:
+    repository: rrajo-portfolio/frontend-service
+    tag: latest
