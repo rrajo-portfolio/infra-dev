@@ -15,11 +15,6 @@ pipeline {
             defaultValue: false,
             description: 'Bring up the docker-compose stack for a smoke test (requires Docker on the agent).'
         )
-        booleanParam(
-            name: 'RUN_HELM_DEPLOY',
-            defaultValue: false,
-            description: 'Deploy services to the current kube-context using Helm charts.'
-        )
     }
     environment {
         GITHUB_CREDS_ID = 'github-pat'
@@ -359,14 +354,6 @@ pipeline {
                         }
                     )
                 }
-            }
-        }
-        stage('Helm deploy') {
-            when {
-                expression { return params.RUN_HELM_DEPLOY }
-            }
-            steps {
-                error 'Helm deploy is not supported in this Jenkins environment. Run the helm commands manually from a cluster-aware agent or shell.'
             }
         }
     }
