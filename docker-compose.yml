@@ -194,7 +194,7 @@ services:
       KC_SPI_THEME_DEFAULT: portfolio-theme
       KC_SPI_THEME_CACHE_THEMES: "false"
       KC_SPI_THEME_CACHE_TEMPLATES: "false"
-    command: ["start-dev", "--http-relative-path=/auth"]
+    command: ["start-dev", "--http-relative-path=/auth", "--import-realm"]
     ports:
       - "${KEYCLOAK_HTTP_PORT:-7080}:8080"
     depends_on:
@@ -342,7 +342,7 @@ services:
     restart: unless-stopped
     environment:
       API_URL: ${FRONTEND_API_URL:-http://localhost:${GATEWAY_HTTP_PORT:-8085}}
-      KEYCLOAK_URL: ${FRONTEND_KEYCLOAK_URL:-http://localhost:${GATEWAY_HTTP_PORT:-8085}/auth}
+      KEYCLOAK_URL: ${FRONTEND_KEYCLOAK_URL:-http://localhost:${KEYCLOAK_HTTP_PORT:-7080}/auth}
       KEYCLOAK_REALM: portfolio
       KEYCLOAK_CLIENT_ID: portfolio-frontend
     ports:
@@ -378,7 +378,7 @@ services:
     container_name: ${CONTAINER_PREFIX:-}prometheus
     restart: unless-stopped
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus:/etc/prometheus:ro
       - prometheus-data:/prometheus
     ports:
       - "${PROMETHEUS_HTTP_PORT:-9090}:9090"
