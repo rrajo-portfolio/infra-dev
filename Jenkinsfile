@@ -286,6 +286,7 @@ pipeline {
                         "NOTIFICATION_HTTP_PORT=18086",
                         "SONAR_HTTP_PORT=19000",
                         "PROMETHEUS_HTTP_PORT=19090",
+                        "GRAFANA_HTTP_PORT=23000",
                         "JENKINS_HTTP_PORT=18090",
                         "JENKINS_AGENT_PORT=25000",
                         "FRONTEND_HTTP_PORT=18081",
