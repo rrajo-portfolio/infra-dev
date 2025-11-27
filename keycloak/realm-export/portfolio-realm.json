@@ -117,21 +117,7 @@
           }
         }
       }
-    ],
-    "client": {
-      "account": [
-        {
-          "name": "manage-account",
-          "description": "${role_manage-account}",
-          "composite": false
-        },
-        {
-          "name": "view-profile",
-          "description": "${role_view-profile}",
-          "composite": false
-        }
-      ]
-    }
+    ]
   },
   "scopeMappings": [
     {
@@ -209,6 +195,7 @@
         }
       ],
       "realmRoles": [
+        "default-roles-portfolio",
         "admin",
         "portfolio_admin",
         "catalog_admin",
@@ -235,10 +222,22 @@
         }
       ],
       "realmRoles": [
+        "default-roles-portfolio",
         "user",
         "catalog_read",
         "orders_read",
         "orders_write"
+      ]
+    },
+    {
+      "username": "service-account-portfolio-api",
+      "enabled": true,
+      "serviceAccountClientId": "portfolio-api",
+      "realmRoles": [
+        "catalog_read",
+        "orders_read",
+        "orders_write",
+        "users_read"
       ]
     }
   ]
