@@ -266,37 +266,43 @@ pipeline {
                     def scriptsDir = "${repoRoot}/scripts"
                     def volumeNamespace = "ci"
                     sh "chmod +x ${scriptsDir}/wait-for-service.sh"
-                    withEnv([
+
+                    def portOverrides = [
+                        CATALOG_DB_PORT      : '13307',
+                        USERS_DB_PORT        : '13308',
+                        ORDERS_DB_PORT       : '13309',
+                        MAILHOG_HTTP_PORT    : '18025',
+                        MAILHOG_SMTP_PORT    : '11025',
+                        ELASTIC_HTTP_PORT    : '19200',
+                        KIBANA_HTTP_PORT     : '15601',
+                        ZOOKEEPER_PORT       : '22181',
+                        KAFKA_PORT           : '19094',
+                        KEYCLOAK_HTTP_PORT   : '17080',
+                        NGINX_HTTP_PORT      : '18080',
+                        GATEWAY_HTTP_PORT    : '18085',
+                        NOTIFICATION_HTTP_PORT: '18086',
+                        SONAR_HTTP_PORT      : '19000',
+                        PROMETHEUS_HTTP_PORT : '19090',
+                        GRAFANA_HTTP_PORT    : '23000',
+                        JENKINS_HTTP_PORT    : '18090',
+                        JENKINS_AGENT_PORT   : '25000',
+                        FRONTEND_HTTP_PORT   : '18081',
+                        ADMINER_HTTP_PORT    : '18088',
+                        RABBITMQ_AMQP_PORT   : '25672',
+                        RABBITMQ_HTTP_PORT   : '35672'
+                    ]
+
+                    def envList = portOverrides.collect { key, value -> "${key}=${value}" } + [
                         "SERVICES_ROOT=${servicesRootEnv}",
                         "COMPOSE_PROJECT_NAME=portfolio",
                         "CONTAINER_PREFIX=ci-",
                         "VOLUME_NAMESPACE=${volumeNamespace}",
-                        "CATALOG_DB_PORT=13307",
-                        "USERS_DB_PORT=13308",
-                        "ORDERS_DB_PORT=13309",
-                        "MAILHOG_HTTP_PORT=18025",
-                        "MAILHOG_SMTP_PORT=11025",
-                        "ELASTIC_HTTP_PORT=19200",
-                        "KIBANA_HTTP_PORT=15601",
-                        "ZOOKEEPER_PORT=22181",
-                        "KAFKA_PORT=19094",
-                        "KEYCLOAK_HTTP_PORT=17080",
-                        "NGINX_HTTP_PORT=18080",
-                        "GATEWAY_HTTP_PORT=18085",
-                        "NOTIFICATION_HTTP_PORT=18086",
-                        "SONAR_HTTP_PORT=19000",
-                        "PROMETHEUS_HTTP_PORT=19090",
-                        "GRAFANA_HTTP_PORT=23000",
-                        "JENKINS_HTTP_PORT=18090",
-                        "JENKINS_AGENT_PORT=25000",
-                        "FRONTEND_HTTP_PORT=18081",
-                        "FRONTEND_API_URL=http://host.docker.internal:18085",
-                        "FRONTEND_KEYCLOAK_URL=http://host.docker.internal:17080/auth",
-                        "ADMINER_HTTP_PORT=18088",
-                        "RABBITMQ_AMQP_PORT=25672",
-                        "RABBITMQ_HTTP_PORT=35672",
+                        "FRONTEND_API_URL=http://host.docker.internal:${portOverrides.GATEWAY_HTTP_PORT}",
+                        "FRONTEND_KEYCLOAK_URL=http://host.docker.internal:${portOverrides.KEYCLOAK_HTTP_PORT}/auth",
                         "NGINX_BUILD_CONTEXT=${repoRoot}/nginx"
-                    ]) {
+                    ]
+
+                    withEnv(envList) {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                             sh "docker rm -f ci-keycloak ci-keycloak_db || true"
