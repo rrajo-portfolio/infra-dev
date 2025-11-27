@@ -122,6 +122,9 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "${ZOOKEEPER_PORT:-2181}:2181"
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
     networks:
       - portfolio-net
 
@@ -466,6 +469,10 @@ volumes:
     name: ${VOLUME_NAMESPACE:-infra-dev}_elasticsearch-data
   kafka-data:
     name: ${VOLUME_NAMESPACE:-infra-dev}_kafka-data
+  zookeeper-data:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_zookeeper-data
+  zookeeper-log:
+    name: ${VOLUME_NAMESPACE:-infra-dev}_zookeeper-log
   sonarqube-data:
     name: ${VOLUME_NAMESPACE:-infra-dev}_sonarqube-data
   sonarqube-logs:
