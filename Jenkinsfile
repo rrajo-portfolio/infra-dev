@@ -176,6 +176,7 @@ pipeline {
                                         $SONAR_CMD \
                                           -Dsonar.projectKey=catalog-service \
                                           -Dsonar.projectName=catalog-service \
+                                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
                                           -Dsonar.login=\\$SONAR_TOKEN
                                     """
@@ -188,6 +189,7 @@ pipeline {
                                         $SONAR_CMD \
                                           -Dsonar.projectKey=users-service \
                                           -Dsonar.projectName=users-service \
+                                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
                                           -Dsonar.login=\\$SONAR_TOKEN
                                     """
@@ -200,6 +202,7 @@ pipeline {
                                         $SONAR_CMD \
                                           -Dsonar.projectKey=orders-service \
                                           -Dsonar.projectName=orders-service \
+                                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
                                           -Dsonar.login=\\$SONAR_TOKEN
                                     """
@@ -212,6 +215,7 @@ pipeline {
                                         $SONAR_CMD \
                                           -Dsonar.projectKey=gateway-service \
                                           -Dsonar.projectName=gateway-service \
+                                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
                                           -Dsonar.login=\\$SONAR_TOKEN
                                     """
@@ -224,6 +228,7 @@ pipeline {
                                         $SONAR_CMD \
                                           -Dsonar.projectKey=notification-service \
                                           -Dsonar.projectName=notification-service \
+                                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
                                           -Dsonar.login=\\$SONAR_TOKEN
                                     """
