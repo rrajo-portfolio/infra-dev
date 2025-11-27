@@ -256,11 +256,18 @@ pipeline {
             }
             steps {
                 script {
-                    def composeFile = "${env.WORKSPACE}/docker-compose.yml"
+                    def repoRoot = env.WORKSPACE
+                    def servicesRootEnv = '.'
+                    if (!fileExists("${repoRoot}/docker-compose.yml") && fileExists("${repoRoot}/infra-dev/docker-compose.yml")) {
+                        repoRoot = "${env.WORKSPACE}/infra-dev"
+                        servicesRootEnv = '..'
+                    }
+                    def composeFile = "${repoRoot}/docker-compose.yml"
+                    def scriptsDir = "${repoRoot}/scripts"
                     def volumeNamespace = "ci"
-                    sh 'chmod +x scripts/wait-for-service.sh'
+                    sh "chmod +x ${scriptsDir}/wait-for-service.sh"
                     withEnv([
-                        "SERVICES_ROOT=.",
+                        "SERVICES_ROOT=${servicesRootEnv}",
                         "COMPOSE_PROJECT_NAME=portfolio",
                         "CONTAINER_PREFIX=ci-",
                         "VOLUME_NAMESPACE=${volumeNamespace}",
@@ -286,21 +293,21 @@ pipeline {
                         "ADMINER_HTTP_PORT=18088",
                         "RABBITMQ_AMQP_PORT=25672",
                         "RABBITMQ_HTTP_PORT=35672",
-                        "NGINX_BUILD_CONTEXT=${env.WORKSPACE}/nginx"
+                        "NGINX_BUILD_CONTEXT=${repoRoot}/nginx"
                     ]) {
                         try {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                             sh "docker rm -f ci-keycloak ci-keycloak_db || true"
                             sh "docker volume rm ${volumeNamespace}_kafka-data || true"
                             sh "docker compose -f ${composeFile} up -d --build"
-                            sh "./scripts/wait-for-service.sh ${composeFile} kafka 30 kafka-topics --bootstrap-server localhost:9092 --list"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} kafka 30 kafka-topics --bootstrap-server localhost:9092 --list"
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --describe --topic catalog-product-events"
-                            sh "./scripts/wait-for-service.sh ${composeFile} keycloak-db 30 pg_isready -h localhost -U keycloak"
-                            sh "./scripts/wait-for-service.sh ${composeFile} host 0 curl -sf http://host.docker.internal:$KEYCLOAK_HTTP_PORT/auth/realms/portfolio/.well-known/openid-configuration"
-                            sh "./scripts/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$GATEWAY_HTTP_PORT/actuator/health"
-                            sh "./scripts/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$NOTIFICATION_HTTP_PORT/actuator/health"
-                            sh "./scripts/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$FRONTEND_HTTP_PORT"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} keycloak-db 30 pg_isready -h localhost -U keycloak"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 0 curl -sf http://host.docker.internal:$KEYCLOAK_HTTP_PORT/auth/realms/portfolio/.well-known/openid-configuration"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$GATEWAY_HTTP_PORT/actuator/health"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$NOTIFICATION_HTTP_PORT/actuator/health"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$FRONTEND_HTTP_PORT"
                         } finally {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                         }
