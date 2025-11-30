@@ -1,8 +1,8 @@
 param(
-  [string]$GatewayUrl = "http://localhost:8085",
+  [string]$GatewayUrl = "http://localhost:8085/api",
   [string]$TokenUrl = "http://localhost:7080/auth/realms/portfolio/protocol/openid-connect/token",
   [string]$Username = "portfolio-admin",
-  [string]$Password = "admin123",
+  [string]$Password = "Password123!",
   [string]$ClientId = "portfolio-frontend"
 )
 
@@ -60,14 +60,14 @@ $productSamples = @(
 Write-Host "Seeding products..."
 foreach ($product in $productSamples) {
   try {
-    Invoke-Gateway -Method Post -Path "/api/catalog/products" -Body $product | Out-Null
+    Invoke-Gateway -Method Post -Path "/catalog/products" -Body $product | Out-Null
   }
   catch {
     Write-Warning "Product $($product.sku) skipped: $($_.Exception.Message)"
   }
 }
 
-$productList = (Invoke-Gateway -Method Get -Path "/api/catalog/products?size=100").content
+$productList = (Invoke-Gateway -Method Get -Path "/catalog/products?size=100").content
 if (-not $productList) {
   Write-Warning "No se pudo crear ning\u00FAn producto. Revisa los logs de catalog-service."
   exit 1
@@ -93,14 +93,14 @@ $userSamples = @(
 Write-Host "Seeding users..."
 foreach ($user in $userSamples) {
   try {
-    Invoke-Gateway -Method Post -Path "/api/users" -Body $user | Out-Null
+    Invoke-Gateway -Method Post -Path "/users" -Body $user | Out-Null
   }
   catch {
     Write-Warning "User $($user.email) skipped: $($_.Exception.Message)"
   }
 }
 
-$userList = (Invoke-Gateway -Method Get -Path "/api/users?size=100").content
+$userList = (Invoke-Gateway -Method Get -Path "/users?size=100").content
 if (-not $userList) {
   Write-Warning "No se pudo crear ning\u00FAn usuario. Revisa los logs de users-service."
   exit 1
@@ -139,13 +139,13 @@ for ($i = 0; $i -lt 10; $i++) {
 Write-Host "Seeding orders..."
 foreach ($order in $orderPayloads) {
   try {
-    Invoke-Gateway -Method Post -Path "/api/orders" -Body $order | Out-Null
+    Invoke-Gateway -Method Post -Path "/orders" -Body $order | Out-Null
   }
   catch {
     Write-Warning "Order for user $($order.userId) skipped: $($_.Exception.Message)"
   }
 }
 
-$orderCount = (Invoke-Gateway -Method Get -Path "/api/orders?size=50").content.Count
+$orderCount = (Invoke-Gateway -Method Get -Path "/orders?size=50").content.Count
 Write-Host "Orders available:" $orderCount
 Write-Host "Seed completed."
