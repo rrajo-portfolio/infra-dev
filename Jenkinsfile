@@ -297,8 +297,8 @@ pipeline {
                         "COMPOSE_PROJECT_NAME=portfolio",
                         "CONTAINER_PREFIX=ci-",
                         "VOLUME_NAMESPACE=${volumeNamespace}",
-                        "FRONTEND_API_URL=http://host.docker.internal:${portOverrides.GATEWAY_HTTP_PORT}",
-                        "FRONTEND_KEYCLOAK_URL=http://host.docker.internal:${portOverrides.KEYCLOAK_HTTP_PORT}/auth",
+                        "FRONTEND_API_URL=http://gateway-service:8080",
+                        "FRONTEND_KEYCLOAK_URL=http://keycloak:8080/auth",
                         "NGINX_BUILD_CONTEXT=${repoRoot}/nginx"
                     ]
 
@@ -312,10 +312,11 @@ pipeline {
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --create --if-not-exists --topic catalog-product-events --partitions 1 --replication-factor 1"
                             sh "docker compose -f ${composeFile} exec -T kafka kafka-topics --bootstrap-server localhost:9092 --describe --topic catalog-product-events"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} keycloak-db 30 pg_isready -h localhost -U keycloak"
-                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 0 curl -sf http://host.docker.internal:$KEYCLOAK_HTTP_PORT/auth/realms/portfolio/.well-known/openid-configuration"
-                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$GATEWAY_HTTP_PORT/actuator/health"
-                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$NOTIFICATION_HTTP_PORT/actuator/health"
-                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 40 curl -sf http://host.docker.internal:$FRONTEND_HTTP_PORT"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://keycloak:8080/auth/realms/portfolio/.well-known/openid-configuration"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://gateway-service:8080/actuator/health"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://notification-service:8080/actuator/health"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://api_gateway"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://frontend-service"
                         } finally {
                             sh "docker compose -f ${composeFile} down --remove-orphans || true"
                         }
