@@ -26,6 +26,7 @@ pipeline {
         ORDERS_REPO    = 'https://github.com/rrajo-portfolio/orders-service.git'
         GATEWAY_REPO   = 'https://github.com/rrajo-portfolio/gateway-service.git'
         NOTIFICATION_REPO = 'https://github.com/rrajo-portfolio/notification-service.git'
+        PAYMENT_REPO = 'https://github.com/rrajo-portfolio/payment-service.git'
         FRONTEND_REPO  = 'https://github.com/rrajo-portfolio/frontend-service.git'
         MVN_TEST_CMD   = './mvnw -B test'
         SONAR_CMD      = './mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594:sonar'
@@ -75,6 +76,13 @@ pipeline {
                         }
                     }
                 }
+                stage('payment-service repo') {
+                    steps {
+                        dir('payment-service') {
+                            git branch: 'main', credentialsId: env.GITHUB_CREDS_ID, url: env.PAYMENT_REPO
+                        }
+                    }
+                }
                 stage('frontend-service repo') {
                     steps {
                         dir('frontend-service') {
@@ -87,7 +95,7 @@ pipeline {
         stage('Warmup mvnw') {
             steps {
                 script {
-                    ['catalog-service', 'users-service', 'orders-service', 'gateway-service', 'notification-service'].each { svc ->
+                    ['catalog-service', 'users-service', 'orders-service', 'gateway-service', 'notification-service', 'payment-service'].each { svc ->
                         dir(svc) {
                             sh 'chmod +x mvnw'
                             sh './mvnw -B -q --version'
@@ -133,6 +141,14 @@ pipeline {
                 stage('notification-service tests') {
                     steps {
                         dir('notification-service') {
+                            sh 'chmod +x mvnw'
+                            sh env.MVN_TEST_CMD
+                        }
+                    }
+                }
+                stage('payment-service tests') {
+                    steps {
+                        dir('payment-service') {
                             sh 'chmod +x mvnw'
                             sh env.MVN_TEST_CMD
                         }
@@ -228,6 +244,19 @@ pipeline {
                                         $SONAR_CMD \
                                           -Dsonar.projectKey=notification-service \
                                           -Dsonar.projectName=notification-service \
+                                           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                                          -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
+                                          -Dsonar.login=\\$SONAR_TOKEN
+                                    """
+                                }
+                            },
+                            'payment-service sonar': {
+                                dir('payment-service') {
+                                    sh 'chmod +x mvnw'
+                                    sh """
+                                        $SONAR_CMD \
+                                          -Dsonar.projectKey=payment-service \
+                                          -Dsonar.projectName=payment-service \
                                           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                                           -Dsonar.host.url=\\${env.SONAR_HOST_URL} \
                                           -Dsonar.login=\\$SONAR_TOKEN
@@ -271,6 +300,7 @@ pipeline {
                         CATALOG_DB_PORT      : '13307',
                         USERS_DB_PORT        : '13308',
                         ORDERS_DB_PORT       : '13309',
+                        PAYMENT_DB_PORT      : '13310',
                         MAILHOG_HTTP_PORT    : '18025',
                         MAILHOG_SMTP_PORT    : '11025',
                         ELASTIC_HTTP_PORT    : '19200',
@@ -315,6 +345,7 @@ pipeline {
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://keycloak:8080/auth/realms/portfolio/.well-known/openid-configuration"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://gateway-service:8080/actuator/health"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://notification-service:8080/actuator/health"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://payment-service:8080/actuator/health"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://api_gateway"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://frontend-service"
                         } finally {
@@ -351,6 +382,11 @@ pipeline {
                         'notification image': {
                             dir('notification-service') {
                                 sh "docker build -t \\${env.IMAGE_NAMESPACE}/notification-service:\\${env.BUILD_NUMBER} ."
+                            }
+                        },
+                        'payment image': {
+                            dir('payment-service') {
+                                sh "docker build -t \\${env.IMAGE_NAMESPACE}/payment-service:\\${env.BUILD_NUMBER} ."
                             }
                         },
                         'frontend image': {
