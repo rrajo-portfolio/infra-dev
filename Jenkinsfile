@@ -346,7 +346,7 @@ pipeline {
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://keycloak:8080/auth/realms/portfolio/.well-known/openid-configuration"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://gateway-service:8080/actuator/health"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://notification-service:8080/actuator/health"
-                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://payment-service:8080/actuator/health"
+                            sh "${scriptsDir}/wait-for-service.sh ${composeFile} payment-service 60 curl -sf http://localhost:8080/actuator/health"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://api_gateway"
                             sh "${scriptsDir}/wait-for-service.sh ${composeFile} host 60 curl -sf http://frontend-service"
                         } finally {
